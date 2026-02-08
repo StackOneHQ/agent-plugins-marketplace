@@ -1,0 +1,24 @@
+{
+  "name": "stackone",
+  "version": "2.0.0",
+  "description": "StackOne integration skills — platform operations, account linking, AI agent SDKs, connector discovery, and CLI tooling for 200+ SaaS connectors",
+  "author": {
+    "name": "StackOne",
+    "url": "https://stackone.com"
+  },
+  "homepage": "https://docs.stackone.com",
+  "repository": "https://github.com/StackOneHQ/agent-plugins-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "stackone",
+    "integrations",
+    "unified-api",
+    "hris",
+    "ats",
+    "crm",
+    "lms",
+    "mcp",
+    "a2a",
+    "ai-agents"
+  ]
+}

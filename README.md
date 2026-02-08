@@ -4,8 +4,20 @@ Agent skills for building integrations with [StackOne](https://stackone.com) —
 
 ## Install
 
+### Claude Code (plugin marketplace)
+
 ```bash
-# Install all skills
+# Add the marketplace
+/plugin marketplace add stackonehq/agent-plugins-marketplace
+
+# Install the StackOne plugin (all 5 skills)
+/plugin install stackone@stackone-marketplace
+```
+
+### Any agent (via Skills CLI)
+
+```bash
+# Install all skills (works with Claude Code, Cursor, Codex, Windsurf, etc.)
 npx skills add stackonehq/agent-plugins-marketplace
 
 # Install a specific skill

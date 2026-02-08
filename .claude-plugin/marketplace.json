@@ -1,0 +1,40 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "stackone-marketplace",
+  "owner": {
+    "name": "StackOne",
+    "email": "engineering@stackone.com"
+  },
+  "metadata": {
+    "description": "StackOne agent skills for building integrations with 200+ SaaS tools via unified API, MCP, A2A, and SDKs",
+    "version": "2.0.0"
+  },
+  "plugins": [
+    {
+      "name": "stackone",
+      "source": ".",
+      "description": "StackOne integration skills — platform operations, account linking, AI agent SDKs, connector discovery, and CLI tooling for 200+ SaaS connectors",
+      "version": "2.0.0",
+      "category": "integrations",
+      "tags": [
+        "stackone",
+        "integrations",
+        "unified-api",
+        "hris",
+        "ats",
+        "crm",
+        "lms",
+        "mcp",
+        "a2a",
+        "ai-agents"
+      ],
+      "author": {
+        "name": "StackOne",
+        "url": "https://stackone.com"
+      },
+      "homepage": "https://docs.stackone.com",
+      "repository": "https://github.com/StackOneHQ/agent-plugins-marketplace",
+      "license": "MIT"
+    }
+  ]
+}
