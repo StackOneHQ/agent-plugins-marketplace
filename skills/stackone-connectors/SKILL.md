@@ -45,7 +45,7 @@ Not all providers support all actions in a category. The API reference docs indi
 
 ### Step 4: Use the Actions RPC for provider-specific operations
 
-For operations not covered by the unified API, use the Actions RPC:
+For provider-specific operations beyond the standard endpoints, use the Actions RPC:
 
 ```bash
 curl -X POST https://api.stackone.com/unified/actions/execute \
@@ -90,10 +90,10 @@ Result: Current list of HRIS connectors with capabilities.
 
 ### Example 2: User wants to perform a provider-specific operation
 
-User says: "I need to trigger a custom workflow in BambooHR that's not in the unified API"
+User says: "I need to trigger a custom workflow in BambooHR that's not in the standard endpoints"
 
 Actions:
-1. Check the unified HRIS API first — it may already be covered
+1. Check StackOne's standard HRIS actions first — it may already be covered
 2. If not, explain the Actions RPC endpoint
 3. Show how to construct the RPC call with the BambooHR-specific path
 4. Fetch the Actions RPC reference for payload details
@@ -122,9 +122,9 @@ Result: Clear path forward — either request or build.
 - If not found, suggest requesting it or building a custom connector
 
 ### Action returns "not supported" for a provider
-**Cause**: Not all providers support all unified API operations.
+**Cause**: Not all providers support all standard operations.
 - Check the API reference for provider-level support details
-- Use the Actions RPC for provider-specific operations that bypass the unified layer
+- Use the Actions RPC for provider-specific operations beyond the standard actions
 - Some operations require specific OAuth scopes on the provider side
 
 ### Connector logos not loading

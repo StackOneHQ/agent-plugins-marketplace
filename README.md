@@ -1,6 +1,6 @@
 # StackOne Skills
 
-Agent skills for building integrations with [StackOne](https://stackone.com) — the unified API platform that lets AI agents and applications connect to 200+ HR, ATS, CRM, LMS, and SaaS tools through a single API.
+Agent skills for [StackOne](https://stackone.com) — integration infrastructure for AI agents. 10,000+ production-ready actions, 200+ connectors, and an AI integration builder to extend to any API.
 
 ## Install
 

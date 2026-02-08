@@ -1,6 +1,6 @@
 # StackOne API Categories
 
-StackOne unifies these API categories. Fetch the relevant introduction page for details on available endpoints, request/response schemas, and supported operations.
+StackOne provides actions across these categories. Fetch the relevant introduction page for details on available endpoints, request/response schemas, and supported operations.
 
 | Category | Introduction | Example Endpoint |
 |----------|-------------|-----------------|

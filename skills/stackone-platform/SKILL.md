@@ -1,6 +1,6 @@
 ---
 name: stackone-platform
-description: Manage StackOne platform resources including API keys, linked accounts, logs, and webhooks. Use when user asks to "set up StackOne", "list my accounts", "debug API errors", "check integration status", or "configure webhooks". Covers authentication, account management, and platform troubleshooting. Do NOT use for building AI agents (use stackone-agents) or discovering connector capabilities (use stackone-connectors).
+description: Manage StackOne resources including API keys, linked accounts, logs, and webhooks. Use when user asks to "set up StackOne", "list my accounts", "debug API errors", "check integration status", or "configure webhooks". Covers authentication, account management, and troubleshooting. Do NOT use for building AI agents (use stackone-agents) or discovering connector capabilities (use stackone-connectors).
 license: MIT
 compatibility: Requires network access to fetch live documentation from docs.stackone.com
 metadata:
@@ -22,11 +22,11 @@ Do not guess or rely on potentially outdated information in this skill. Always v
 
 ### Step 1: Identify what the user needs
 
-StackOne is a unified API platform for integrating with 200+ SaaS tools across HR, ATS, CRM, LMS, and more. Common platform tasks:
+StackOne is integration infrastructure for AI agents — 200+ connectors and 10,000+ production-ready actions across HR, ATS, CRM, LMS, and more. Agents reason, StackOne executes. Common tasks:
 
 - **Setting up**: Creating API keys, understanding auth
 - **Managing accounts**: Listing linked accounts, checking status, debugging connections
-- **API calls**: Making requests to the unified API, understanding headers
+- **API calls**: Making requests to StackOne endpoints, understanding headers
 - **Webhooks**: Subscribing to account lifecycle events
 - **Debugging**: Investigating failed requests, auth errors, rate limits
 
@@ -35,16 +35,16 @@ StackOne is a unified API platform for integrating with 200+ SaaS tools across H
 All API calls require Basic auth. The API key goes in the Authorization header:
 
 ```bash
-curl https://api.stackone.com/unified/hris/employees \
-  -H "Authorization: Basic $(echo -n 'YOUR_API_KEY:' | base64)" \
-  -H "x-account-id: ACCOUNT_ID"
+curl https://api.stackone.com/accounts \
+  -H "Authorization: Basic $(echo -n 'YOUR_API_KEY:' | base64)"
 ```
 
 Key details:
 - API keys are created at https://app.stackone.com
 - Key format: `v1.{region}.xxxxx`
-- The `x-account-id` header is required for all data API calls — it identifies which linked account to query
+- The `x-account-id` header is required for data API calls — it identifies which linked account to query
 - A **linked account** = a connection between your customer and a third-party provider (e.g., BambooHR)
+- For how AI agents call StackOne actions (via SDK, MCP, or A2A), see the `stackone-agents` skill
 
 ### Step 3: Account management
 
@@ -66,17 +66,17 @@ Consult `references/api-categories.md` for the full list of API categories (HRIS
 
 ## Examples
 
-### Example 1: User wants to make their first API call
+### Example 1: User wants to check their linked accounts
 
-User says: "How do I get a list of employees from BambooHR via StackOne?"
+User says: "How do I see which accounts are connected in StackOne?"
 
 Actions:
 1. Confirm they have an API key (created at https://app.stackone.com)
-2. Confirm they have a linked BambooHR account (they'll need the account ID)
-3. Show the curl command with proper auth and `x-account-id` header
-4. Fetch `https://docs.stackone.com/hris/api-reference/employees/list-employees` for the response schema
+2. Show the curl command: `GET https://api.stackone.com/accounts` with proper auth header
+3. Explain the response fields: `id`, `provider`, `status`, `origin_owner_id`
+4. Fetch `https://docs.stackone.com/platform/api-reference/accounts/list-accounts` for the full schema
 
-Result: Working curl command with explanation of the response format.
+Result: Working command with explanation of account statuses and how to use account IDs.
 
 ### Example 2: User wants to debug a failing integration
 

@@ -6,20 +6,20 @@
     "email": "engineering@stackone.com"
   },
   "metadata": {
-    "description": "StackOne agent skills for building integrations with 200+ SaaS tools via unified API, MCP, A2A, and SDKs",
+    "description": "StackOne agent skills — integration infrastructure for AI agents with 200+ connectors, MCP, A2A, and SDKs",
     "version": "2.0.0"
   },
   "plugins": [
     {
       "name": "stackone",
       "source": ".",
-      "description": "StackOne integration skills — platform operations, account linking, AI agent SDKs, connector discovery, and CLI tooling for 200+ SaaS connectors",
+      "description": "Integration infrastructure for AI agents — account linking, 200+ connectors, 10,000+ actions, TypeScript/Python SDKs, MCP, A2A, and connector development CLI",
       "version": "2.0.0",
       "category": "integrations",
       "tags": [
         "stackone",
         "integrations",
-        "unified-api",
+        "integration-infrastructure",
         "hris",
         "ats",
         "crm",
