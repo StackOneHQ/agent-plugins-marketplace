@@ -1,104 +1,134 @@
 ---
 name: stackone-connectors
-description: Discover StackOne connectors, available actions, and integration capabilities across 200+ SaaS platforms. Covers HRIS, ATS, CRM, LMS, ticketing, messaging, documents, IAM, and accounting categories. Use to recommend specific actions or understand what operations are available for a given provider.
+description: Discover StackOne's 200+ connectors and 9,000+ actions across HRIS, ATS, CRM, LMS, ticketing, messaging, documents, IAM, and accounting. Use when user asks "which providers does StackOne support", "what can I do with BambooHR", "recommend an integration for HR", "what actions are available", "how do I call a provider-specific action", or "does StackOne support Workday". Helps choose the right connector and actions for any use case. Do NOT use for building agents (use stackone-agents) or connecting accounts (use stackone-connect).
+license: MIT
+compatibility: Requires network access to fetch live documentation from docs.stackone.com
 metadata:
   author: stackone
-  version: "1.0"
+  version: "2.0"
 ---
 
-# StackOne Connectors — Integration Capabilities
+# StackOne Connectors — Integration Discovery
 
-You are an expert on StackOne's connector ecosystem. StackOne provides 200+ pre-built connectors across 9 categories with 9,000+ individual actions. This skill helps you discover what's available and recommend the right connectors and actions for a use case.
+## Important
 
-## When to use
+Connector availability changes frequently as StackOne adds new providers. Before answering:
+1. Fetch `https://docs.stackone.com/connectors/introduction` for the current connector list
+2. For specific provider capabilities, fetch the relevant category API reference
 
-Use this skill when the user needs to:
-- Find out which SaaS platforms StackOne supports
-- Understand what operations (actions) are available for a specific provider
-- Compare connector capabilities across providers
-- Recommend integrations for a use case
-- Look up API endpoints for a specific category or provider
-- Understand connector release stages (GA, Beta, Preview)
+Never assume a connector exists or doesn't exist without checking live docs.
 
-## Documentation discovery
+## Instructions
 
-Always fetch live documentation to provide accurate connector information:
+### Step 1: Identify the user's integration need
 
-### Connector listings
-- **Connectors overview**: `https://docs.stackone.com/connectors/introduction`
-- **Request a new connector**: `https://docs.stackone.com/connectors/add-new`
+Common patterns:
+- **"What providers do you support for X?"** → Check the category (HRIS, ATS, CRM, etc.) in the connectors page
+- **"Can I do Y with provider Z?"** → Check the provider's supported actions in the API reference
+- **"Recommend an integration for my use case"** → Match the use case to a category, then list available providers
 
-### Category-specific API docs
-Fetch these pages for detailed endpoints, request/response schemas, and supported operations:
+### Step 2: Look up connector availability
 
-| Category | Introduction | API Reference |
-|----------|-------------|---------------|
-| HRIS | `https://docs.stackone.com/hris/introduction` | `https://docs.stackone.com/hris/api-reference/employees/list-employees` |
-| ATS | `https://docs.stackone.com/ats/introduction` | `https://docs.stackone.com/ats/api-reference/candidates/list-candidates` |
-| CRM | `https://docs.stackone.com/crm/introduction` | `https://docs.stackone.com/crm/api-reference/contacts/list-contacts` |
-| LMS | `https://docs.stackone.com/lms/introduction` | `https://docs.stackone.com/lms/api-reference/content/list-content` |
-| IAM | `https://docs.stackone.com/iam/introduction` | `https://docs.stackone.com/iam/api-reference/users/list-users` |
-| Documents | `https://docs.stackone.com/documents/introduction` | `https://docs.stackone.com/documents/api-reference/documents/list-documents` |
-| Accounting | `https://docs.stackone.com/accounting/introduction` | `https://docs.stackone.com/accounting/api-reference/accounts/list-accounts` |
-| Ticketing | `https://docs.stackone.com/ticketing/introduction` | `https://docs.stackone.com/ticketing/api-reference/tickets/list-tickets` |
-| Messaging | `https://docs.stackone.com/messaging/introduction` | `https://docs.stackone.com/messaging/api-reference/messages/send-message` |
+Fetch `https://docs.stackone.com/connectors/introduction` for the full, current list.
 
-### Full docs index
-- `https://docs.stackone.com/llms.txt` — machine-readable list of all documentation pages
+Consult `references/category-overview.md` for a snapshot of categories and example providers. But always verify against live docs since new connectors are added regularly.
 
-## Connector categories and example providers
+### Step 3: Check available actions for a provider
 
-| Category | Example Providers |
-|----------|-------------------|
-| **HRIS** | BambooHR, Workday, Rippling, Personio, HiBob, Gusto, ADP, Deel |
-| **ATS** | Ashby, Lever, Greenhouse, SmartRecruiters, Workable, iCIMS |
-| **CRM** | HubSpot, Salesforce, Zoho CRM, Attio, Pipedrive |
-| **LMS** | Docebo, Cornerstone, Go1, Adobe Learning Manager, Absorb |
-| **Ticketing** | Jira, ServiceNow, Linear, Zendesk, Freshdesk |
-| **Messaging** | Slack, Discord, Microsoft Teams |
-| **Documents** | Google Drive, Dropbox, SharePoint, Confluence, Notion |
-| **IAM** | Okta, GitHub, Microsoft Entra ID, OneLogin |
-| **Accounting** | QuickBooks Online, Xero, NetSuite |
+Each connector exposes a set of actions (API operations). To find what's available:
 
-This is not exhaustive — StackOne adds new connectors regularly. Always fetch the connectors page for the current list.
+1. Identify the category (e.g., HRIS)
+2. Fetch the category API reference (e.g., `https://docs.stackone.com/hris/api-reference/employees/list-employees`)
+3. Check which operations the specific provider supports
+
+Not all providers support all actions in a category. The API reference docs indicate provider-level support.
+
+### Step 4: Use the Actions RPC for provider-specific operations
+
+For operations not covered by the unified API, use the Actions RPC:
+
+```bash
+curl -X POST https://api.stackone.com/unified/actions/execute \
+  -H "Authorization: Basic $(echo -n 'YOUR_API_KEY:' | base64)" \
+  -H "x-account-id: ACCOUNT_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "get",
+    "path": "/provider-specific-endpoint"
+  }'
+```
+
+Fetch `https://docs.stackone.com/platform/api-reference/actions/make-an-rpc-call-to-an-action` for the full RPC reference.
+
+### Step 5: Test before building
+
+- **AI Playground**: https://app.stackone.com/playground — test API calls interactively
+- **MCP Inspector**: `npx @modelcontextprotocol/inspector https://api.stackone.com/mcp` — test via MCP
+- **Postman**: importable collection available from the docs
 
 ## Release stages
 
-| Stage | Meaning |
-|-------|---------|
-| **GA** | Production-ready, fully supported |
-| **Beta** | Stable for testing, may have minor changes |
-| **Preview** | Early-stage, expect changes |
+| Stage | Meaning | Recommendation |
+|-------|---------|----------------|
+| **GA** | Production-ready, fully supported | Safe for production |
+| **Beta** | Stable for testing, minor changes possible | OK for non-critical flows |
+| **Preview** | Early-stage, expect breaking changes | Development/testing only |
 
-## Actions RPC
+## Examples
 
-For operations beyond the unified API, the Actions RPC lets you call provider-specific actions directly:
+### Example 1: User wants to know what HR integrations are available
 
-```
-POST https://api.stackone.com/unified/actions/execute
-```
+User says: "Which HRIS tools does StackOne support?"
 
-API reference: `https://docs.stackone.com/platform/api-reference/actions/make-an-rpc-call-to-an-action`
+Actions:
+1. Fetch `https://docs.stackone.com/connectors/introduction`
+2. Filter for the HRIS category
+3. List available providers with their release stages
+4. For each, summarize key operations (list employees, create employees, etc.)
 
-## Connector logos
+Result: Current list of HRIS connectors with capabilities.
 
-Connector logos are available at:
-```
-https://stackone-logos.com/api/{connector-slug}/filled/png
-```
+### Example 2: User wants to perform a provider-specific operation
 
-## Testing integrations
+User says: "I need to trigger a custom workflow in BambooHR that's not in the unified API"
 
-- **AI Playground**: `https://app.stackone.com/playground` — test API calls in the browser
-- **MCP Inspector**: `npx @modelcontextprotocol/inspector https://api.stackone.com/mcp`
-- **Postman collection**: available for import from the docs
+Actions:
+1. Check the unified HRIS API first — it may already be covered
+2. If not, explain the Actions RPC endpoint
+3. Show how to construct the RPC call with the BambooHR-specific path
+4. Fetch the Actions RPC reference for payload details
 
-## Custom connectors
+Result: Working RPC call for the provider-specific operation.
 
-If a provider isn't supported, users can build custom connectors with the Connector Engine:
-- `https://docs.stackone.com/guides/connector-engine/introduction`
-- `https://docs.stackone.com/guides/connector-engine/ai-builder` (AI-assisted generation)
+### Example 3: User needs a connector that doesn't exist
 
-## When you need more detail
+User says: "Does StackOne support our custom HR tool?"
 
-Fetch the live documentation for the latest connector listings, supported actions, and API schemas. Start with `https://docs.stackone.com/llms.txt` to discover the right page.
+Actions:
+1. Check the connectors page — it may exist under a different name
+2. If not found, explain two options:
+   a. Request it: `https://docs.stackone.com/connectors/add-new`
+   b. Build it: use the Connector Engine (see `stackone-cli` skill)
+3. If they have budget/urgency, recommend the AI Builder for faster custom connector development
+
+Result: Clear path forward — either request or build.
+
+## Troubleshooting
+
+### Can't find a specific provider
+**Cause**: Provider may be listed under a different name, or may not be supported yet.
+- Search the connectors page by the provider's official name
+- Check if it's under a parent company name (e.g., "Microsoft Entra ID" not "Azure AD")
+- If not found, suggest requesting it or building a custom connector
+
+### Action returns "not supported" for a provider
+**Cause**: Not all providers support all unified API operations.
+- Check the API reference for provider-level support details
+- Use the Actions RPC for provider-specific operations that bypass the unified layer
+- Some operations require specific OAuth scopes on the provider side
+
+### Connector logos not loading
+**Cause**: Incorrect slug format.
+- Logo URL format: `https://stackone-logos.com/api/{connector-slug}/filled/png`
+- Slugs are lowercase, hyphenated (e.g., `bamboo-hr`, `google-drive`)
+- Fetch the connectors page to verify the exact slug

@@ -1,65 +1,42 @@
 ---
 name: stackone-connect
-description: Link end-user accounts to third-party SaaS providers using StackOne Connect Sessions and the StackOne Hub React component. Use when implementing account linking, the embedded Hub, auth links, or connect session flows.
+description: Implement account linking using StackOne Connect Sessions and the Hub React component. Use when user asks to "connect a provider", "embed the integration picker", "add BambooHR to my app", "create a connect session", "set up auth links", or "handle account webhooks". Covers the full flow from session creation to webhook handling. Do NOT use for making API calls after linking (use stackone-platform) or building AI agents (use stackone-agents).
+license: MIT
+compatibility: Requires network access to fetch live documentation from docs.stackone.com
 metadata:
   author: stackone
-  version: "1.0"
+  version: "2.0"
 ---
 
 # StackOne Connect — Account Linking
 
-You are an expert on StackOne's account linking system. This skill covers Connect Sessions, the StackOne Hub component, and auth links — the mechanisms for connecting end-user accounts to third-party SaaS providers through StackOne.
+## Important
 
-## When to use
+Before writing code, fetch the latest documentation:
+1. Fetch `https://docs.stackone.com/guides/connect-tools-overview` for the current connection flow
+2. Fetch `https://www.npmjs.com/package/@stackone/hub` for the latest Hub component API
 
-Use this skill when the user needs to:
-- Implement account linking in their application
-- Embed the StackOne Hub component (React or vanilla JS)
-- Create Connect Sessions programmatically
-- Generate auth links for onboarding
-- Handle account lifecycle webhooks
-- Customize Hub theming or behavior
+The Hub component is in active beta — props and peer dependencies change between versions.
 
-## Documentation discovery
+## Instructions
 
-Fetch the latest docs before answering:
+### Step 1: Choose a connection method
 
-1. **Connect tools overview**: `https://docs.stackone.com/guides/connect-tools-overview`
-2. **Embedding the Hub**: `https://docs.stackone.com/guides/embedding-stackone-hub`
-3. **Auth links**: `https://docs.stackone.com/guides/auth-link`
-4. **Connect Sessions API**: `https://docs.stackone.com/platform/api-reference/connect-sessions/create-connect-session`
-5. **Webhooks**: `https://docs.stackone.com/guides/webhooks`
+| Method | When to use |
+|--------|-------------|
+| **Embedded Hub** | In-app integration picker — users stay in your app |
+| **Auth Link** | Email onboarding or external flows — standalone URL, valid 5 days |
+| **Dashboard** | Internal testing only — never for production |
 
-For the Hub React component, also check:
-- NPM package: `https://www.npmjs.com/package/@stackone/hub`
-- GitHub README: `https://github.com/stackoneHQ/hub`
+If unsure, recommend the Embedded Hub. It provides the best user experience.
 
-For the full docs index: `https://docs.stackone.com/llms.txt`
+### Step 2: Create a Connect Session (backend)
 
-## Core concepts
-
-### Connection methods
-
-StackOne supports three ways to link accounts:
-
-| Method | Use case |
-|--------|----------|
-| **Embedded Hub** | In-app integration picker — users authenticate without leaving your app |
-| **Auth Link** | Standalone URL (valid 5 days) for onboarding emails or external flows |
-| **Dashboard** | Internal testing only — not for production |
-
-### Connect Session flow
-
-1. **Backend** creates a Connect Session via API → receives a session token
-2. **Frontend** initializes the Hub with that token
-3. **User** selects a provider and authenticates
-4. **StackOne** fires a webhook when the account is created
-
-### Creating a Connect Session
+Your backend creates a session token that the frontend uses to initialize the Hub:
 
 ```bash
 curl -X POST https://api.stackone.com/connect_sessions \
-  -H "Authorization: Basic base64(api_key:)" \
+  -H "Authorization: Basic $(echo -n 'YOUR_API_KEY:' | base64)" \
   -H "Content-Type: application/json" \
   -d '{
     "origin_owner_id": "customer-123",
@@ -67,8 +44,9 @@ curl -X POST https://api.stackone.com/connect_sessions \
   }'
 ```
 
-You can filter available providers:
+The response includes a `token` field. Pass this to the frontend.
 
+To filter which providers appear in the Hub:
 ```json
 {
   "origin_owner_id": "customer-123",
@@ -78,7 +56,9 @@ You can filter available providers:
 }
 ```
 
-### Hub React component (New Hub — beta)
+Fetch `https://docs.stackone.com/platform/api-reference/connect-sessions/create-connect-session` for the full request/response schema.
+
+### Step 3: Initialize the Hub (frontend)
 
 ```bash
 npm install @stackone/hub
@@ -99,53 +79,90 @@ function ConnectorPage() {
   return (
     <StackOneHub
       token={token}
-      onSuccess={(account) => console.log("Connected:", account.id)}
-      onCancel={() => console.log("Cancelled")}
-      onClose={() => console.log("Closed")}
+      onSuccess={(account) => {
+        // Store account.id — you'll need it for all subsequent API calls
+        console.log("Connected:", account.id, account.provider);
+      }}
+      onCancel={() => console.log("User cancelled")}
+      onClose={() => console.log("Hub closed")}
     />
   );
 }
 ```
 
-#### Hub props
+For the full props API and theming options, consult `references/hub-reference.md`.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `token` | string | required | Connect session token |
-| `mode` | `'integration-picker' \| 'csv-importer'` | `'integration-picker'` | Hub mode |
-| `accountId` | string | — | Pre-select account for editing |
-| `baseUrl` | string | `'https://api.stackone.com'` | API endpoint |
-| `height` | string | `'500px'` | Component height |
-| `theme` | `'light' \| 'dark' \| PartialMalachiteTheme` | `'light'` | Visual theme |
+### Step 4: Set up webhook listeners
 
-Peer dependencies: `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, `zod`
+Webhooks are required for Auth Links (no frontend callbacks) and recommended for the Embedded Hub:
 
-### Legacy Hub (v1)
-
-The legacy iframe-based Hub uses a different package:
-
-```bash
-npm install @stackone/react-hub
-```
-
-Fetch the embedding guide for v1 usage: `https://docs.stackone.com/guides/embedding-stackone-hub`
-
-### Auth links
-
-Auth links are standalone URLs for use in emails or external onboarding. They expire after 5 days and require webhook subscriptions since there are no frontend callbacks.
-
-### Webhooks
-
-Subscribe to account lifecycle events:
-
-| Event | Description |
-|-------|-------------|
+| Event | When it fires |
+|-------|---------------|
 | `account.created` | New account linked |
 | `account.updated` | Credentials refreshed |
 | `account.deleted` | Account disconnected |
 
-Webhook docs: `https://docs.stackone.com/guides/webhooks`
+Fetch `https://docs.stackone.com/guides/webhooks` for the webhook payload format and setup instructions.
 
-## When you need more detail
+### Step 5: Verify the connection
 
-Always fetch the live documentation for the latest API signatures, component props, and examples. Start with `https://docs.stackone.com/llms.txt` to find the right page.
+After receiving `onSuccess` or the `account.created` webhook, make a test API call:
+
+```bash
+curl https://api.stackone.com/accounts/{account_id} \
+  -H "Authorization: Basic $(echo -n 'YOUR_API_KEY:' | base64)"
+```
+
+A `200` response with `status: "active"` confirms the connection is working.
+
+## Examples
+
+### Example 1: User wants to add an integration picker to a React app
+
+User says: "I want to let my customers connect their BambooHR account"
+
+Actions:
+1. Create a backend endpoint that calls `POST /connect_sessions` with `provider: "bamboohr"`
+2. Return the session token to the frontend
+3. Install `@stackone/hub` and render `<StackOneHub token={token} />`
+4. Handle `onSuccess` to store the account ID
+5. Set up a webhook endpoint for `account.created` as a backup
+
+Result: Working integration picker that filters to BambooHR only.
+
+### Example 2: User wants to send connection links via email
+
+User says: "I need to onboard customers by email, not in-app"
+
+Actions:
+1. Create a Connect Session with `origin_owner_id` set to the customer
+2. Generate an auth link from the session (fetch auth link docs)
+3. Set up webhook listeners — auth links have no frontend callbacks
+4. Send the link via email (valid for 5 days)
+
+Result: Customer clicks link, authenticates, webhook fires with account details.
+
+## Troubleshooting
+
+### Hub component doesn't render
+**Cause**: Missing peer dependencies.
+- `@stackone/hub` requires: `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, `zod`
+- Check that versions match — fetch the NPM page for exact version constraints
+- Verify the session token is valid and not expired
+
+### Connect Session token expired
+**Cause**: Tokens are short-lived.
+- Generate a new token for each Hub initialization
+- Do not cache tokens across sessions
+
+### onSuccess fires but account status is "error"
+**Cause**: Provider-side authentication succeeded but StackOne couldn't sync data.
+- Check the account details in the dashboard for the specific error
+- Common cause: insufficient permissions on the provider side
+- The provider may require additional OAuth scopes
+
+### Webhooks not arriving
+**Cause**: Webhook endpoint configuration issue.
+- Verify the endpoint URL is publicly accessible (not localhost)
+- Check the webhook signing secret matches
+- Fetch `https://docs.stackone.com/guides/webhooks` for the verification process

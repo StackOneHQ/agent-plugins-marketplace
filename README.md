@@ -1,6 +1,6 @@
 # StackOne Skills
 
-Agent skills for building integrations with [StackOne](https://stackone.com) — the unified API platform for HR, ATS, CRM, LMS, and 200+ SaaS connectors.
+Agent skills for building integrations with [StackOne](https://stackone.com) — the unified API platform that lets AI agents and applications connect to 200+ HR, ATS, CRM, LMS, and SaaS tools through a single API.
 
 ## Install
 
@@ -14,20 +14,25 @@ npx skills add stackonehq/agent-plugins-marketplace@stackone-agents
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| [`stackone-platform`](skills/stackone-platform/) | StackOne platform operations — API keys, accounts, logs, webhooks |
-| [`stackone-connect`](skills/stackone-connect/) | Link end-user accounts using Connect Sessions and the StackOne Hub |
-| [`stackone-agents`](skills/stackone-agents/) | Build AI agents that call StackOne-linked accounts via SDK, MCP, or A2A |
-| [`stackone-cli`](skills/stackone-cli/) | Use the StackOne CLI for connector development and platform operations |
-| [`stackone-connectors`](skills/stackone-connectors/) | Discover available connectors, actions, and integration capabilities |
+| Skill | What it does | When to use |
+|-------|-------------|-------------|
+| [`stackone-platform`](skills/stackone-platform/) | Platform operations — API keys, accounts, logs, debugging | "Set up StackOne", "list my accounts", "debug API errors" |
+| [`stackone-connect`](skills/stackone-connect/) | Account linking via Connect Sessions and the Hub component | "Connect a provider", "embed the integration picker" |
+| [`stackone-agents`](skills/stackone-agents/) | Build AI agents with TypeScript/Python SDK, MCP, or A2A | "Add StackOne tools to my agent", "set up MCP" |
+| [`stackone-cli`](skills/stackone-cli/) | Custom connector development and deployment | "Build a custom connector", "deploy my connector" |
+| [`stackone-connectors`](skills/stackone-connectors/) | Discover connectors, actions, and integration capabilities | "Which providers does StackOne support?" |
+
+Each skill includes step-by-step workflows, concrete examples, and troubleshooting for common errors.
 
 ## Design Philosophy
 
-These skills **point to live documentation** rather than duplicating content. This means:
+These skills **teach workflows** while pointing to **live documentation** for details that change frequently:
 
-- Skills stay accurate without frequent updates
-- Agents fetch the latest docs, SDK references, and API specs at runtime
+- Step-by-step instructions for common tasks (not just API reference)
+- Real user scenario examples with trigger → actions → result
+- Error handling and troubleshooting for common failure modes
+- `references/` directories for detailed lookup tables loaded on demand
+- Agents fetch the latest docs, SDK READMEs, and API specs at runtime
 - The canonical source of truth remains [docs.stackone.com](https://docs.stackone.com)
 
 ## Documentation Index
@@ -43,3 +48,7 @@ StackOne publishes a machine-readable documentation index at [`docs.stackone.com
 - [Python SDK (`stackone-ai`)](https://github.com/stackoneHQ/stackone-ai-python)
 - [CLI (`@stackone/cli`)](https://www.npmjs.com/package/@stackone/cli)
 - [Hub React Component (`@stackone/hub`)](https://www.npmjs.com/package/@stackone/hub)
+
+## License
+
+MIT

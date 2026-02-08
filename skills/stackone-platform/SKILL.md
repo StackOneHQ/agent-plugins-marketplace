@@ -1,84 +1,119 @@
 ---
 name: stackone-platform
-description: StackOne platform operations — manage API keys, linked accounts, logs, webhooks, and dashboard resources. Use when working with the StackOne unified API platform for HR, ATS, CRM, LMS, and SaaS integrations.
+description: Manage StackOne platform resources including API keys, linked accounts, logs, and webhooks. Use when user asks to "set up StackOne", "list my accounts", "debug API errors", "check integration status", or "configure webhooks". Covers authentication, account management, and platform troubleshooting. Do NOT use for building AI agents (use stackone-agents) or discovering connector capabilities (use stackone-connectors).
+license: MIT
+compatibility: Requires network access to fetch live documentation from docs.stackone.com
 metadata:
   author: stackone
-  version: "1.0"
+  version: "2.0"
 ---
 
 # StackOne Platform
 
-You are an expert on the StackOne unified API platform. StackOne provides a single API to integrate with 200+ HR, ATS, CRM, LMS, ticketing, messaging, documents, IAM, and accounting SaaS tools.
+## Important
 
-## When to use
+Before answering platform questions, fetch the latest documentation:
+1. Fetch `https://docs.stackone.com/llms.txt` to discover all available doc pages
+2. Fetch the specific page relevant to the user's question
 
-Use this skill when the user needs to:
-- Understand what StackOne is and how the platform works
-- Work with the StackOne API (authentication, accounts, logs, webhooks)
-- Manage linked accounts or API keys
-- Debug API calls or integration issues
-- Set up webhooks or event subscriptions
+Do not guess or rely on potentially outdated information in this skill. Always verify against live docs.
 
-## Documentation discovery
+## Instructions
 
-Before answering questions, fetch the latest documentation. StackOne maintains a machine-readable index of all docs:
+### Step 1: Identify what the user needs
 
-1. **Fetch the docs index**: `https://docs.stackone.com/llms.txt` — lists every documentation page with descriptions
-2. **Then fetch specific pages** relevant to the user's question
+StackOne is a unified API platform for integrating with 200+ SaaS tools across HR, ATS, CRM, LMS, and more. Common platform tasks:
 
-Key documentation sections:
-- Platform overview: `https://docs.stackone.com/overview/introduction`
-- API authentication: `https://docs.stackone.com/overview/authentication`
-- Webhooks: `https://docs.stackone.com/guides/webhooks`
-- Connect sessions: `https://docs.stackone.com/platform/api-reference/connect-sessions/create-connect-session`
-- Accounts API: `https://docs.stackone.com/platform/api-reference/accounts/list-accounts`
+- **Setting up**: Creating API keys, understanding auth
+- **Managing accounts**: Listing linked accounts, checking status, debugging connections
+- **API calls**: Making requests to the unified API, understanding headers
+- **Webhooks**: Subscribing to account lifecycle events
+- **Debugging**: Investigating failed requests, auth errors, rate limits
 
-## Core concepts
+### Step 2: Authentication
 
-### Authentication
-
-All StackOne API calls use Basic auth with your API key:
-
-```
-Authorization: Basic base64(api_key:)
-```
-
-API keys are created in the [StackOne Dashboard](https://app.stackone.com). Keys follow the format `v1.{region}.xxxxx`.
-
-### Accounts
-
-A **linked account** represents a connection between your customer and a third-party provider (e.g., BambooHR, Greenhouse). Each account has:
-- An `id` assigned by StackOne
-- A `provider` (the SaaS tool)
-- An `origin_owner_id` (your internal customer identifier)
-- A `status` (active, error, etc.)
-
-### Making API calls
-
-All data API calls require an `x-account-id` header identifying which linked account to query:
+All API calls require Basic auth. The API key goes in the Authorization header:
 
 ```bash
 curl https://api.stackone.com/unified/hris/employees \
-  -H "Authorization: Basic base64(api_key:)" \
-  -H "x-account-id: account-id-here"
+  -H "Authorization: Basic $(echo -n 'YOUR_API_KEY:' | base64)" \
+  -H "x-account-id: ACCOUNT_ID"
 ```
 
-### Webhooks
+Key details:
+- API keys are created at https://app.stackone.com
+- Key format: `v1.{region}.xxxxx`
+- The `x-account-id` header is required for all data API calls — it identifies which linked account to query
+- A **linked account** = a connection between your customer and a third-party provider (e.g., BambooHR)
 
-StackOne fires webhooks on account lifecycle events:
-- `account.created` — new account linked
-- `account.updated` — credentials refreshed
-- `account.deleted` — account disconnected
+### Step 3: Account management
 
-### Actions RPC
+Each linked account has:
+- `id` — assigned by StackOne
+- `provider` — the SaaS tool (e.g., `bamboohr`, `greenhouse`)
+- `origin_owner_id` — your internal customer identifier
+- `status` — `active`, `error`, `inactive`
 
-For operations not covered by the unified API, use the Actions RPC endpoint to call provider-specific actions:
+To list accounts: `GET https://api.stackone.com/accounts`
+To get one account: `GET https://api.stackone.com/accounts/{id}`
 
-```
-POST https://api.stackone.com/unified/actions/execute
-```
+Fetch the accounts API reference for full details:
+`https://docs.stackone.com/platform/api-reference/accounts/list-accounts`
 
-Fetch the API reference for details: `https://docs.stackone.com/platform/api-reference/actions/make-an-rpc-call-to-an-action`
+### Step 4: Fetch category-specific docs as needed
+
+Consult `references/api-categories.md` for the full list of API categories (HRIS, ATS, CRM, etc.) and their documentation URLs.
+
+## Examples
+
+### Example 1: User wants to make their first API call
+
+User says: "How do I get a list of employees from BambooHR via StackOne?"
+
+Actions:
+1. Confirm they have an API key (created at https://app.stackone.com)
+2. Confirm they have a linked BambooHR account (they'll need the account ID)
+3. Show the curl command with proper auth and `x-account-id` header
+4. Fetch `https://docs.stackone.com/hris/api-reference/employees/list-employees` for the response schema
+
+Result: Working curl command with explanation of the response format.
+
+### Example 2: User wants to debug a failing integration
+
+User says: "My StackOne API call is returning 401"
+
+Actions:
+1. Check if their API key is correctly base64-encoded (common mistake: forgetting the trailing colon)
+2. Verify the key hasn't been revoked in the dashboard
+3. If they get 200 on `/accounts` but fail on data endpoints, check that `x-account-id` is present and valid
+4. Fetch `https://docs.stackone.com/overview/authentication` for the latest auth details
+
+Result: Identified root cause with fix.
+
+## Troubleshooting
+
+### Error: 401 Unauthorized
+**Cause**: Invalid or missing API key.
+- Verify the key format is `v1.{region}.xxxxx`
+- The Authorization header must be `Basic base64(api_key:)` — note the trailing colon before encoding
+- Check the key is active at https://app.stackone.com
+
+### Error: 400 Bad Request with "account not found"
+**Cause**: The `x-account-id` header references a non-existent or disconnected account.
+- List accounts with `GET /accounts` to find valid IDs
+- Check the account status — it may be `error` or `inactive`
+
+### Error: 429 Too Many Requests
+**Cause**: Rate limit exceeded.
+- StackOne applies rate limits per API key
+- Implement exponential backoff
+- Fetch `https://docs.stackone.com/overview/rate-limits` for current limits
+
+### API calls return empty data
+**Cause**: The linked account may have limited permissions on the provider side.
+- Verify the provider credentials have the right scopes
+- Check the account status in the dashboard
+- Some providers require additional setup (API tokens, OAuth scopes)
 
 ## Key URLs
 
@@ -87,26 +122,4 @@ Fetch the API reference for details: `https://docs.stackone.com/platform/api-ref
 | Dashboard | https://app.stackone.com |
 | API base | https://api.stackone.com |
 | Documentation | https://docs.stackone.com |
-| Docs index (machine-readable) | https://docs.stackone.com/llms.txt |
-| AI Playground | https://app.stackone.com/playground |
-| Connector logos | https://stackone-logos.com |
-
-## API categories
-
-StackOne unifies these API categories. Fetch category-specific docs as needed:
-
-| Category | Docs URL |
-|----------|----------|
-| HRIS | https://docs.stackone.com/hris/introduction |
-| ATS | https://docs.stackone.com/ats/introduction |
-| CRM | https://docs.stackone.com/crm/introduction |
-| LMS | https://docs.stackone.com/lms/introduction |
-| IAM | https://docs.stackone.com/iam/introduction |
-| Documents | https://docs.stackone.com/documents/introduction |
-| Accounting | https://docs.stackone.com/accounting/introduction |
-| Ticketing | https://docs.stackone.com/ticketing/introduction |
-| Messaging | https://docs.stackone.com/messaging/introduction |
-
-## When you need more detail
-
-Always browse the live documentation rather than guessing. Fetch `https://docs.stackone.com/llms.txt` to discover the right page, then fetch that page for up-to-date content.
+| Docs index | https://docs.stackone.com/llms.txt |

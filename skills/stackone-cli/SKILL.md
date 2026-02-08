@@ -1,69 +1,109 @@
 ---
 name: stackone-cli
-description: Use the StackOne CLI (@stackone/cli) for platform operations, connector development, deployment, and testing. Covers connector engine commands, CI/CD workflows, and local development.
+description: Build and deploy custom StackOne connectors using the CLI and Connector Engine. Use when user asks to "build a custom connector", "deploy my connector", "use the StackOne AI builder", "set up CI/CD for connectors", "test my connector locally", or "install the StackOne CLI". Covers the full connector development workflow from init through deployment. Do NOT use for using existing connectors (use stackone-connectors) or building AI agents (use stackone-agents).
+license: MIT
+compatibility: Requires Node.js and npm. Requires network access to fetch live documentation from docs.stackone.com.
 metadata:
   author: stackone
-  version: "1.0"
+  version: "2.0"
 ---
 
-# StackOne CLI
+# StackOne CLI — Connector Development
 
-You are an expert on the StackOne CLI tool. The CLI provides commands for platform operations, custom connector development, testing, and deployment.
+## Important
 
-## When to use
+The CLI is actively developed and commands change between versions. Before providing CLI guidance:
+1. Fetch `https://docs.stackone.com/guides/connector-engine/cli-reference` for the current command reference
+2. Fetch `https://www.npmjs.com/package/@stackone/cli` for the latest version
 
-Use this skill when the user needs to:
-- Install or configure the StackOne CLI
-- Use CLI commands for platform operations
-- Build custom connectors with the Connector Engine
-- Set up CI/CD pipelines for connector deployment
-- Debug connector issues locally
+Do not guess CLI commands or flags — always verify against live docs.
 
-## Documentation discovery
+## Instructions
 
-Always fetch live documentation for the latest CLI commands and options:
-
-- **CLI reference**: `https://docs.stackone.com/guides/connector-engine/cli-reference`
-- **NPM package** (changelog, version): `https://www.npmjs.com/package/@stackone/cli`
-- **Connector Engine intro**: `https://docs.stackone.com/guides/connector-engine/introduction`
-- **Connector structure**: `https://docs.stackone.com/guides/connector-engine/connector-structure`
-- **AI Builder**: `https://docs.stackone.com/guides/connector-engine/ai-builder`
-- **CI/CD & GitHub workflow**: `https://docs.stackone.com/guides/connector-engine/github-workflow`
-- **Full docs index**: `https://docs.stackone.com/llms.txt`
-
-## Installation
+### Step 1: Install the CLI
 
 ```bash
 npm install -g @stackone/cli
 ```
 
-The CLI installs a global `stackone` command.
+This installs the global `stackone` command. Verify with `stackone --version`.
 
-## Core concepts
+### Step 2: Understand when to build a custom connector
 
-### Connector Engine
+Custom connectors are for platforms that StackOne doesn't natively support. Before building one:
+- Check if the provider already exists: use the `stackone-connectors` skill or browse https://docs.stackone.com/connectors/introduction
+- If the provider exists but is missing specific actions, you may not need a full custom connector — check the Actions RPC endpoint first
 
-The Connector Engine lets you build custom connectors to platforms that StackOne doesn't natively support. The CLI provides commands to:
+### Step 3: Initialize a connector project
 
-- Initialize a new connector project
-- Run connectors locally for testing
-- Deploy connectors to StackOne's infrastructure
-- Generate connector code with AI assistance
+Fetch the connector structure guide for the current project layout:
+`https://docs.stackone.com/guides/connector-engine/connector-structure`
 
-### AI Builder
+The Connector Engine provides:
+- Project scaffolding
+- Local development server for testing
+- Type-safe action definitions
+- Deployment tooling
 
-The AI Builder generates connector scaffolding from API documentation. Fetch the guide for details:
+### Step 4: Use the AI Builder (optional)
+
+The AI Builder can generate connector scaffolding from API documentation. Fetch the guide:
 `https://docs.stackone.com/guides/connector-engine/ai-builder`
 
-### CI/CD
+This accelerates development by generating boilerplate from an OpenAPI spec or API docs URL.
 
-The CLI supports automated deployment via GitHub Actions and other CI systems. Fetch the workflow guide:
+### Step 5: Test locally
+
+Run the connector locally to test against the target API before deploying. Fetch the CLI reference for the exact test commands:
+`https://docs.stackone.com/guides/connector-engine/cli-reference`
+
+### Step 6: Deploy
+
+Deploy to StackOne's infrastructure. For automated deployments, set up CI/CD:
 `https://docs.stackone.com/guides/connector-engine/github-workflow`
 
-## When you need more detail
+## Examples
 
-The CLI is actively developed and commands may change. Always fetch the latest documentation:
+### Example 1: User wants to build a connector for an internal API
 
-1. `https://docs.stackone.com/guides/connector-engine/cli-reference` for command reference
-2. `https://www.npmjs.com/package/@stackone/cli` for the latest version and changelog
-3. `https://docs.stackone.com/llms.txt` for discovering related pages
+User says: "We have an internal HR system. Can I connect it to StackOne?"
+
+Actions:
+1. Confirm the internal API has a REST/GraphQL endpoint
+2. Install the CLI: `npm install -g @stackone/cli`
+3. Fetch the connector structure guide for the scaffolding command
+4. If they have an OpenAPI spec, suggest the AI Builder for faster scaffolding
+5. Walk through the init → develop → test → deploy flow
+
+Result: Custom connector project initialized with the right structure.
+
+### Example 2: User wants to set up CI/CD for connector deployment
+
+User says: "How do I auto-deploy connectors from GitHub?"
+
+Actions:
+1. Fetch `https://docs.stackone.com/guides/connector-engine/github-workflow`
+2. Walk through the GitHub Actions workflow configuration
+3. Explain the deployment stages (dev → staging → production)
+
+Result: Working GitHub Actions pipeline for connector deployment.
+
+## Troubleshooting
+
+### CLI command not found after install
+**Cause**: Global npm bin directory not in PATH.
+- Run `npm config get prefix` to find the install location
+- Add `{prefix}/bin` to your PATH
+- Alternatively, use `npx @stackone/cli` instead of the global command
+
+### Authentication failures in CLI
+**Cause**: Missing or invalid credentials.
+- The CLI requires a StackOne API key
+- Fetch the CLI reference for the current auth setup command
+- Verify the key is active at https://app.stackone.com
+
+### Connector deployment fails
+**Cause**: Various — check the error message.
+- Fetch the CLI reference for deployment troubleshooting
+- Common issues: missing required fields in connector config, network timeouts
+- For CI/CD failures, check that secrets are correctly configured in GitHub Actions
