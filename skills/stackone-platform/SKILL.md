@@ -60,9 +60,9 @@ To get one account: `GET https://api.stackone.com/accounts/{id}`
 Fetch the accounts API reference for full details:
 `https://docs.stackone.com/platform/api-reference/accounts/list-accounts`
 
-### Step 4: Fetch category-specific docs as needed
+### Step 4: Fetch API docs as needed
 
-Consult `references/api-categories.md` for the full list of API categories (HRIS, ATS, CRM, etc.) and their documentation URLs.
+Consult `references/api-categories.md` for the StackOne API structure (Actions API, Platform API) and connector category documentation URLs.
 
 ## Examples
 

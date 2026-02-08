@@ -4,17 +4,17 @@
 
 ## Categories and Example Providers
 
-| Category | Example Providers | Common Operations |
-|----------|-------------------|-------------------|
-| **HRIS** | BambooHR, Workday, Rippling, Personio, HiBob, Gusto, ADP, Deel | List/create employees, departments, locations, time off |
-| **ATS** | Ashby, Lever, Greenhouse, SmartRecruiters, Workable, iCIMS | List/create candidates, jobs, applications, interviews |
-| **CRM** | HubSpot, Salesforce, Zoho CRM, Attio, Pipedrive | List/create contacts, deals, companies, activities |
-| **LMS** | Docebo, Cornerstone, Go1, Adobe Learning Manager, Absorb | List/create content, courses, completions, users |
-| **Ticketing** | Jira, ServiceNow, Linear, Zendesk, Freshdesk | List/create tickets, comments, users |
-| **Messaging** | Slack, Discord, Microsoft Teams | Send messages, list channels |
-| **Documents** | Google Drive, Dropbox, SharePoint, Confluence, Notion | List/upload documents, folders |
-| **IAM** | Okta, GitHub, Microsoft Entra ID, OneLogin | List users, groups, roles |
-| **Accounting** | QuickBooks Online, Xero, NetSuite | List accounts, invoices, transactions |
+| Category | Example Providers | Example Actions (provider-specific) |
+|----------|-------------------|--------------------------------------|
+| **HRIS** | BambooHR, Workday, Rippling, Personio, HiBob, Gusto, ADP, Deel | `bamboohr_list_employees`, `workday_get_worker` |
+| **ATS** | Ashby, Lever, Greenhouse, SmartRecruiters, Workable, iCIMS | `greenhouse_list_candidates`, `ashby_get_application` |
+| **CRM** | HubSpot, Salesforce, Zoho CRM, Attio, Pipedrive | `salesforce_get_contact`, `hubspot_list_deals` |
+| **LMS** | Docebo, Cornerstone, Go1, Adobe Learning Manager, Absorb | `docebo_list_courses`, `cornerstone_get_completion` |
+| **Ticketing** | Jira, ServiceNow, Linear, Zendesk, Freshdesk | `jira_list_issues`, `zendesk_create_ticket` |
+| **Messaging** | Slack, Discord, Microsoft Teams | `slack_send_message`, `discord_list_channels` |
+| **Documents** | Google Drive, Dropbox, SharePoint, Confluence, Notion | `google_drive_list_files`, `confluence_get_page` |
+| **IAM** | Okta, GitHub, Microsoft Entra ID, OneLogin | `okta_list_users`, `github_list_members` |
+| **Accounting** | QuickBooks Online, Xero, NetSuite | `quickbooks_list_invoices`, `xero_get_account` |
 
 ## Category API Documentation URLs
 

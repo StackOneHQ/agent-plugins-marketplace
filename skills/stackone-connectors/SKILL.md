@@ -35,28 +35,30 @@ Consult `references/category-overview.md` for a snapshot of categories and examp
 
 ### Step 3: Check available actions for a provider
 
-Each connector exposes a set of actions (API operations). To find what's available:
+Each connector exposes its own set of provider-specific actions. Action counts vary significantly — Salesforce has 370+ actions, HubSpot has 100+, while smaller providers may have a handful.
 
-1. Identify the category (e.g., HRIS)
-2. Fetch the category API reference (e.g., `https://docs.stackone.com/hris/api-reference/employees/list-employees`)
-3. Check which operations the specific provider supports
+To find what's available for a specific provider:
+1. Fetch `https://docs.stackone.com/connectors/introduction`
+2. Find the provider and check its listed actions
+3. For action details, fetch `https://docs.stackone.com/platform/api-reference/actions/make-an-rpc-call-to-an-action`
 
-Not all providers support all actions in a category. The API reference docs indicate provider-level support.
+Actions are named `{provider}_{operation}_{entity}` (e.g., `bamboohr_list_employees`, `salesforce_get_contact`).
 
-### Step 4: Use the Actions RPC for provider-specific operations
+### Step 4: Execute actions via the Actions API
 
-For provider-specific operations beyond the standard endpoints, use the Actions RPC:
+All actions are executed through StackOne's Actions API:
 
 ```bash
-curl -X POST https://api.stackone.com/unified/actions/execute \
+curl -X POST https://api.stackone.com/actions/rpc \
   -H "Authorization: Basic $(echo -n 'YOUR_API_KEY:' | base64)" \
   -H "x-account-id: ACCOUNT_ID" \
   -H "Content-Type: application/json" \
   -d '{
-    "method": "get",
-    "path": "/provider-specific-endpoint"
+    "action": "bamboohr_list_employees"
   }'
 ```
+
+AI agents typically call actions via the SDK or MCP rather than raw API calls — see the `stackone-agents` skill for SDK/MCP integration.
 
 Fetch `https://docs.stackone.com/platform/api-reference/actions/make-an-rpc-call-to-an-action` for the full RPC reference.
 
@@ -83,22 +85,22 @@ User says: "Which HRIS tools does StackOne support?"
 Actions:
 1. Fetch `https://docs.stackone.com/connectors/introduction`
 2. Filter for the HRIS category
-3. List available providers with their release stages
-4. For each, summarize key operations (list employees, create employees, etc.)
+3. List available providers with their release stages and action counts
+4. For specific providers the user is interested in, list their available actions
 
-Result: Current list of HRIS connectors with capabilities.
+Result: Current list of HRIS connectors with per-provider action counts.
 
-### Example 2: User wants to perform a provider-specific operation
+### Example 2: User wants to know what they can do with a specific provider
 
-User says: "I need to trigger a custom workflow in BambooHR that's not in the standard endpoints"
+User says: "What can I do with BambooHR through StackOne?"
 
 Actions:
-1. Check StackOne's standard HRIS actions first — it may already be covered
-2. If not, explain the Actions RPC endpoint
-3. Show how to construct the RPC call with the BambooHR-specific path
-4. Fetch the Actions RPC reference for payload details
+1. Fetch `https://docs.stackone.com/connectors/introduction` and find BambooHR
+2. List the available actions (e.g., `bamboohr_list_employees`, `bamboohr_get_employee`, etc.)
+3. Explain the Actions API for executing them, or recommend using the SDK/MCP for agent integration
+4. Fetch the Actions RPC reference for payload details if they need the raw API
 
-Result: Working RPC call for the provider-specific operation.
+Result: Full list of BambooHR actions with how to call them.
 
 ### Example 3: User needs a connector that doesn't exist
 
@@ -122,10 +124,10 @@ Result: Clear path forward — either request or build.
 - If not found, suggest requesting it or building a custom connector
 
 ### Action returns "not supported" for a provider
-**Cause**: Not all providers support all standard operations.
-- Check the API reference for provider-level support details
-- Use the Actions RPC for provider-specific operations beyond the standard actions
-- Some operations require specific OAuth scopes on the provider side
+**Cause**: The requested action doesn't exist for this provider.
+- Each provider has its own set of actions — check the connectors page for what's available
+- Action names include the provider prefix (e.g., `bamboohr_list_employees` not `list_employees`)
+- Some actions require specific OAuth scopes on the provider side
 
 ### Connector logos not loading
 **Cause**: Incorrect slug format.
