@@ -1,0 +1,11 @@
+{
+  "name": "agent-plugins-marketplace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate-marketplace.js"
+  },
+  "devDependencies": {
+    "zod": "^3.24.2"
+  }
+}
