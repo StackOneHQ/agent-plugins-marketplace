@@ -1,0 +1,19 @@
+name: Validate Plugin Manifest
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate marketplace.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate plugin manifests
+        run: npx --yes @anthropic-ai/claude-code plugin validate .
