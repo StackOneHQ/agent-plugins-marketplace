@@ -51,7 +51,7 @@ steps:
             condition: "{{present(inputs.cursor)}}"
 
 result:
-  data: $.steps.typecast_data.output.data
+  data: $.steps.get_data.output.data
   next: $.steps.get_data.output.data.meta.nextCursor
 ```
 
@@ -159,7 +159,7 @@ stackone run --debug \
 
 ```bash
 stackone run --connector <file> --credentials <file> \
-  --action-id list_items --params '{"limit": 2}'
+  --action-id list_items --params '{"page_size": 2}'
 ```
 
 Verify:

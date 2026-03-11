@@ -1,21 +1,33 @@
 ---
 name: stackone-unified-connectors
-description: Build unified/schema-based connectors that transform provider data into standardized schemas. Use when user says "start unified build for [provider]", "build a schema-based connector", "map fields to schema", "test unified connector", or asks about field mapping, enum mapping, pagination configuration, or scope decisions for unified connectors. Covers the complete workflow from schema definition through testing. Do NOT use for agentic/custom connectors that return raw data (use stackone-cli), discovering existing connectors (use stackone-connectors), or building AI agents (use stackone-agents).
+description: Baseline skill for building unified/schema-based connectors that transform provider data into standardized schemas. Use alongside domain-specific schema skills (e.g., unified-hris-schema, unified-crm-schema) that define your organization's standard schemas. Use when user says "start unified build for [provider]", "build a schema-based connector", "map fields to schema", "test unified connector", or asks about field mapping, enum mapping, pagination configuration, or scope decisions. This skill provides implementation patterns; schema skills provide field definitions. Do NOT use for agentic/custom connectors (use stackone-cli), discovering existing connectors (use stackone-connectors), or building AI agents (use stackone-agents).
 license: MIT
 compatibility: Requires StackOne CLI (@stackone/cli). Requires access to provider API documentation.
 metadata:
   author: stackone
-  version: "1.0"
+  version: "2.1"
 ---
 
 # StackOne Unified Connectors
 
 Build connectors that transform provider-specific data into standardized schemas with consistent field names, enum values, and pagination.
 
+## Skill Architecture
+
+This is a **baseline skill** that provides the core workflow and patterns for building unified connectors. It is designed to work alongside **domain-specific schema skills** that you create for your organization's specific use cases.
+
+**Recommended approach:**
+1. Use this skill as your foundation for all unified connector work
+2. Create domain-specific skills for each category you build connectors for (e.g., `unified-hris-schema`, `unified-messaging-schema`, `unified-crm-schema`)
+3. Your domain-specific skills provide the schema definitions, field naming conventions, and enum value standards
+4. This baseline skill provides the implementation patterns, CLI commands, and troubleshooting guidance
+
+This separation allows you to maintain consistent schemas across all providers within a category while leveraging the shared technical patterns from this baseline skill.
+
 ## Important
 
 Before building unified connectors:
-1. Read the CLI README for current commands: `cat node_modules/@stackone/cli/README.md`
+1. Read the CLI documentation: https://docs.stackone.com/guides/connector-engine/cli-reference
 2. Use `stackone help <command>` for command-specific details
 3. Always verify response structures with `--debug` before configuring mappings
 
@@ -97,21 +109,34 @@ stackone run --debug --connector <file> --credentials <file> --action-id <action
 
 ### Step 1: Resolve Schema
 
-**Check for existing schema skill first:**
+**Check for a domain-specific schema skill first.**
 
-```bash
-ls .claude/skills/*schema*.md .claude/skills/schemas/*.md 2>/dev/null
+Domain-specific schema skills (e.g., `unified-hris-schema`, `unified-crm-schema`) should define your organization's standard schema for that category. These skills complement this baseline skill by providing:
+- Target field names and types
+- Enum values and their meanings
+- Required vs optional fields
+- Nested object structures
+
+**If schema skill exists:**
+- Use the schema definitions from that skill immediately
+- Confirm which resource you're building (e.g., "employees", "contacts")
+- Proceed to Step 2
+
+**If no schema skill exists:**
+- Ask user for schema in any format (YAML, JSON, markdown table, field list)
+- Recommend creating a domain-specific schema skill for future builds in this category
+- This ensures consistency across all providers you integrate
+
+**What a schema skill should contain:**
+```yaml
+# Example: unified-hris-schema skill structure
+# - Field definitions with types
+# - Enum values (e.g., employment_status: active, inactive, terminated)
+# - Required fields marked
+# - Nested structures documented
 ```
 
-- **If skill exists**: Use it immediately, confirm briefly, proceed to Step 2
-- **If no skill**: Ask user for schema in any format (YAML, JSON, markdown table, field list)
-
-After receiving schema, offer to save as skill for future reuse.
-
-**Schema must include:**
-- All required fields with types
-- Enum values for enum fields
-- Nested object structures
+Creating domain-specific schema skills prevents drift between providers and reduces repeated schema discussions.
 
 ### Step 2: Research Provider Endpoints (MANDATORY)
 
@@ -147,7 +172,7 @@ Use `scopeDefinitions` (not `scope_definitions`):
 scopeDefinitions:
   employees:read:
     description: Read employee data
-  employees:read_extended:
+  employees:extended:read:
     description: Extended employee data
     includes: employees:read  # Scope inheritance
 ```
@@ -257,7 +282,7 @@ steps:
             condition: "{{present(inputs.cursor)}}"
 
 result:
-  data: $.steps.typecast_data.output.data
+  data: $.steps.get_data.output.data
   next: $.steps.get_data.output.data.meta.nextCursor
 ```
 
@@ -294,23 +319,37 @@ Create a coverage document listing:
 
 ## Examples
 
-### Example 1: Building a unified employee connector
+### Example 1: Building a unified employee connector (with schema skill)
 
 User says: "start unified build for BambooHR"
 
 Actions:
-1. Check for existing schema skill in `.claude/skills/schemas/`
-2. If no skill, ask: "What's your target schema? Share field requirements in any format."
-3. Research BambooHR endpoints: `/v1/employees`, `/v1/employees/directory`, custom reports
-4. Present options with trade-offs (field coverage, scopes, deprecation)
-5. After user selects, implement map_fields with inline fields
-6. Configure pagination with cursor support
-7. Test with `--debug`, verify field names match schema
-8. Document coverage
+1. Check for domain-specific schema skill (e.g., `unified-hris-schema`)
+2. **If skill exists**: Load employee schema from skill, confirm fields, proceed
+3. **If no skill**: Ask for schema, recommend creating `unified-hris-schema` skill for consistency across HRIS providers
+4. Research BambooHR endpoints: `/v1/employees`, `/v1/employees/directory`, custom reports
+5. Present options with trade-offs (field coverage, scopes, deprecation)
+6. After user selects, implement map_fields with inline fields using schema from skill
+7. Configure pagination with cursor support
+8. Test with `--debug`, verify field names match schema
+9. Document coverage
 
-Result: Working unified connector with standardized employee schema.
+Result: Working unified connector with standardized employee schema that matches other HRIS connectors.
 
-### Example 2: Debugging field mapping issues
+### Example 2: First connector in a new category
+
+User says: "build a unified messaging connector for Slack"
+
+Actions:
+1. Check for `unified-messaging-schema` skill - none exists
+2. Ask: "I don't see a messaging schema skill. What fields do you need for messages? I recommend we create a `unified-messaging-schema` skill so future messaging connectors (Teams, Discord) use the same schema."
+3. Collaborate on schema definition
+4. Suggest creating the schema skill before proceeding
+5. Once schema is defined, proceed with standard workflow
+
+Result: New schema skill created, connector built, future messaging connectors will use same schema.
+
+### Example 3: Debugging field mapping issues
 
 User says: "My unified connector returns provider field names instead of my schema"
 
@@ -323,7 +362,7 @@ Actions:
 
 Result: Fields correctly mapped to user's schema.
 
-### Example 3: Pagination not working
+### Example 4: Pagination not working
 
 User says: "Pagination cursor isn't being passed correctly"
 
@@ -370,8 +409,50 @@ Result: Working pagination with correct cursor handling.
 | Connector Engine Docs | https://docs.stackone.com/guides/connector-engine |
 | CLI Reference | https://docs.stackone.com/guides/connector-engine/cli-reference |
 
+## Creating Domain-Specific Schema Skills
+
+To maintain consistency across providers, create schema skills for each category you work with. A domain-specific schema skill should include:
+
+**Required content:**
+- Field definitions with types (`string`, `number`, `boolean`, `datetime_string`, `enum`)
+- Enum value definitions with descriptions
+- Required vs optional field indicators
+- Nested object structures
+
+**Example skill structure:**
+```markdown
+# Unified HRIS Schema
+
+## Employee Resource
+
+### Required Fields
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique identifier |
+| email | string | Primary email address |
+| first_name | string | Employee first name |
+| last_name | string | Employee last name |
+| employment_status | enum | Current employment status |
+
+### Enum: employment_status
+| Value | Description |
+|-------|-------------|
+| active | Currently employed |
+| inactive | On leave or suspended |
+| terminated | No longer employed |
+
+### Optional Fields
+| Field | Type | Description |
+|-------|------|-------------|
+| department | string | Department name |
+| hire_date | datetime_string | Date of hire |
+```
+
+**Naming convention:** `unified-{category}-schema` (e.g., `unified-hris-schema`, `unified-crm-schema`, `unified-messaging-schema`)
+
 ## Related Skills
 
 - **stackone-cli**: For deploying connectors and CLI commands
 - **stackone-connectors**: For discovering existing connector capabilities
 - **stackone-agents**: For building AI agents that use connectors
+- **Your domain-specific schema skills**: For category-specific schemas (create as needed)

@@ -59,7 +59,7 @@ fields:
 ```yaml
 enumMapper:
   matcher:
-    - matchExpression: '{{$.status.toLowerCase() == "active"}}'
+    - matchExpression: '{{($.status || "").toLowerCase() == "active"}}'
       value: active
 ```
 

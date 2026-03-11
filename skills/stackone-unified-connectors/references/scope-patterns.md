@@ -28,7 +28,7 @@ scopeDefinitions:
   employees:read:
     description: Read basic employee data
 
-  employees:read_extended:
+  employees:extended:read:
     description: Extended employee data including compensation
     includes: employees:read  # Inherits base scope
 
@@ -80,7 +80,7 @@ fieldConfigs:
 | Endpoint | Required Scopes | Notes |
 |----------|-----------------|-------|
 | /v2/employees | employees:read | Basic access |
-| /v2/employees/detailed | employees:read, compensation:read | Includes salary |
+| /v2/employees/detailed | employees:read, employees:compensation:read | Includes salary |
 | /v2/org/members | employees:read, org:read | Cross-org data |
 
 ### Step 4: Decision Tree
