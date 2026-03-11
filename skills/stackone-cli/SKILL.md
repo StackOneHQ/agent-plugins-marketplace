@@ -107,3 +107,9 @@ Result: Working GitHub Actions pipeline for connector deployment.
 - Fetch the CLI reference for deployment troubleshooting
 - Common issues: missing required fields in connector config, network timeouts
 - For CI/CD failures, check that secrets are correctly configured in GitHub Actions
+
+## Related Skills
+
+- **stackone-unified-connectors**: For building schema-based connectors that transform provider data into standardized schemas with field mapping, enum translation, and unified pagination
+- **stackone-connectors**: For discovering existing connector capabilities
+- **stackone-agents**: For building AI agents that use connectors
