@@ -1,5 +1,4 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "stackone-marketplace",
   "owner": {
     "name": "StackOne",
