@@ -29,9 +29,10 @@ Triggers when: on a non-default branch (`main`/`master`/`develop`/`trunk`) OR wh
 
 Gather PR context:
 ```bash
-git diff main...HEAD --stat        # What files changed?
-git diff main...HEAD               # Full diff (skim for intent)
-git log main...HEAD --oneline      # Commits in this branch
+BASE=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|origin/||' || echo main)
+git diff $BASE...HEAD --stat       # What files changed?
+git diff $BASE...HEAD              # Full diff (skim for intent)
+git log $BASE...HEAD --oneline     # Commits in this branch
 gh pr view 2>/dev/null             # PR title, description, comments
 ```
 

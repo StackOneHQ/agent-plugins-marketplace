@@ -31,7 +31,8 @@ def validate_skill(path: Path) -> list[str]:
 
 
 def main() -> None:
-    skills_dir = Path("skills")
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    skills_dir = repo_root / "skills"
     if not skills_dir.exists():
         print("No skills/ directory found — skipping.")
         return
