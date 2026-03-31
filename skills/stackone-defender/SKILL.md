@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires Node.js 18+. Optional peer dependencies @huggingface/transformers and onnxruntime-node for Tier 2 ML classification.
 metadata:
   author: stackone
-  version: "1.0"
+  version: "2.0"
 ---
 
 # StackOne Defender
@@ -18,7 +18,7 @@ StackOne Defender is a local-first prompt injection and jailbreak detection libr
 https://www.npmjs.com/package/@stackone/defender
 ```
 
-Do not guess configuration options. Verify against the published package.
+Code examples below are illustrative — verify class names and config keys against the published package README before use. Do not guess configuration options.
 
 ## Instructions
 
@@ -55,7 +55,7 @@ Without these, Defender falls back to Tier 1 pattern matching only.
 import { PromptDefense } from "@stackone/defender";
 
 const defense = new PromptDefense({
-  tier2: { mode: "onnx" }, // default — uses ONNX ML model
+  tier2Config: { mode: "onnx" }, // default — uses ONNX ML model
 });
 
 const result = await defense.scan("What is the capital of France?");
@@ -90,11 +90,9 @@ The `scan()` method returns:
 ```typescript
 const defense = new PromptDefense({
   // Tier 1: pattern matching
-  tier1: {
-    enabled: true, // default: true
-  },
+  enableTier1: true, // default: true
   // Tier 2: ML classification
-  tier2: {
+  tier2Config: {
     mode: "onnx",       // "onnx" (default) or "mlp"
     threshold: 0.5,      // score above this = blocked (default: 0.5)
   },
@@ -113,18 +111,18 @@ When building agents, tool results from external APIs can contain injected conte
 ```typescript
 import { ToolResultSanitizer } from "@stackone/defender";
 
-const sanitizer = new ToolResultSanitizer({
-  tier2Config: { mode: "onnx" },
-});
+const sanitizer = new ToolResultSanitizer();
 
 const toolOutput = await externalApi.getData();
-const sanitized = await sanitizer.scan(JSON.stringify(toolOutput));
+const sanitized = await sanitizer.sanitize(toolOutput, "tool-name");
 
-if (!sanitized.allowed) {
+if (sanitized.riskLevel === "high" || sanitized.riskLevel === "critical") {
   console.warn("Tool result contains suspicious content:", sanitized);
   // Handle: skip, flag, or redact the result
 }
 ```
+
+> **Note**: `ToolResultSanitizer` has its own configuration shape — fetch the npm README for full options. The examples above are illustrative.
 
 ## Examples
 
@@ -160,7 +158,7 @@ Actions:
 ```typescript
 import { PromptDefense } from "@stackone/defender";
 
-const defense = new PromptDefense({ tier2: { mode: "onnx" } });
+const defense = new PromptDefense({ tier2Config: { mode: "onnx" } });
 
 const dataset = [
   { text: "What is 2+2?", expected: true },
@@ -196,7 +194,7 @@ Result: Root cause identified with actionable fix (threshold adjustment or text 
 ### Tier 2 not working / falling back to Tier 1 only
 **Cause**: Missing optional peer dependencies.
 - Install: `npm install @huggingface/transformers onnxruntime-node`
-- Verify: check that `result.score` returns a non-zero value (Tier 1 only returns 0 or 1)
+- Verify: run a scan on a benign string and confirm `result.tier` is `null` (not `"tier1"`) — this confirms the ML model loaded
 
 ### High false positive rate
 **Cause**: Threshold too low for the use case.

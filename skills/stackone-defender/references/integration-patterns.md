@@ -9,7 +9,7 @@ Scan all tool outputs before they enter the LLM context window. This is the most
 ```typescript
 import { PromptDefense } from "@stackone/defender";
 
-const defense = new PromptDefense({ tier2: { mode: "onnx" } });
+const defense = new PromptDefense({ tier2Config: { mode: "onnx" } });
 
 async function safeToolCall(toolName: string, args: any): Promise<string> {
   const rawResult = await executeTool(toolName, args);
@@ -28,6 +28,10 @@ async function safeToolCall(toolName: string, args: any): Promise<string> {
 Scan user messages before processing. Catches direct prompt injection attempts.
 
 ```typescript
+import { PromptDefense } from "@stackone/defender";
+
+const defense = new PromptDefense({ tier2Config: { mode: "onnx" } });
+
 async function handleUserMessage(message: string) {
   const scan = await defense.scan(message);
 
@@ -47,21 +51,25 @@ Add Defender as HTTP middleware to protect API endpoints that accept free-text i
 ```typescript
 import { PromptDefense } from "@stackone/defender";
 
-const defense = new PromptDefense({ tier2: { mode: "onnx" } });
+const defense = new PromptDefense({ tier2Config: { mode: "onnx" } });
 
 // Express middleware
 async function defenderMiddleware(req, res, next) {
-  const text = req.body?.message || req.body?.input || req.body?.prompt;
-  if (!text) return next();
+  try {
+    const text = req.body?.message || req.body?.input || req.body?.prompt;
+    if (!text) return next();
 
-  const scan = await defense.scan(text);
-  if (!scan.allowed) {
-    return res.status(400).json({
-      error: "Input rejected",
-      reason: `Detected by ${scan.tier} (score: ${scan.score.toFixed(2)})`,
-    });
+    const scan = await defense.scan(text);
+    if (!scan.allowed) {
+      return res.status(400).json({
+        error: "Input rejected",
+        reason: `Detected by ${scan.tier} (score: ${scan.score.toFixed(2)})`,
+      });
+    }
+    next();
+  } catch (err) {
+    next(err);
   }
-  next();
 }
 
 app.post("/api/chat", defenderMiddleware, chatHandler);
@@ -74,7 +82,7 @@ Evaluate Defender against a labeled dataset to measure detection quality.
 ```typescript
 import { PromptDefense } from "@stackone/defender";
 
-const defense = new PromptDefense({ tier2: { mode: "onnx" } });
+const defense = new PromptDefense({ tier2Config: { mode: "onnx" } });
 
 interface Sample {
   text: string;
@@ -86,7 +94,7 @@ async function evaluate(samples: Sample[], threshold = 0.5) {
 
   for (const { text, label } of samples) {
     const result = await defense.scan(text);
-    const predicted = !result.allowed;
+    const predicted = result.score >= threshold;
     const actual = label === "malicious";
 
     if (predicted && actual) tp++;
@@ -111,7 +119,7 @@ The ONNX model loads on first inference. Pre-warm at startup to avoid cold-start
 ```typescript
 import { PromptDefense } from "@stackone/defender";
 
-const defense = new PromptDefense({ tier2: { mode: "onnx" } });
+const defense = new PromptDefense({ tier2Config: { mode: "onnx" } });
 
 // Pre-warm at application startup
 await defense.scan("warmup");
