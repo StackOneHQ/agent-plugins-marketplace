@@ -10,7 +10,7 @@ Agent skills for [StackOne](https://stackone.com) — integration infrastructure
 # Add the marketplace
 /plugin marketplace add stackonehq/agent-plugins-marketplace
 
-# Install the StackOne plugin (all 6 skills)
+# Install the StackOne plugin (all 7 skills)
 /plugin install stackone@stackone-marketplace
 ```
 
@@ -34,6 +34,7 @@ npx skills add stackonehq/agent-plugins-marketplace@stackone-agents
 | [`stackone-cli`](skills/stackone-cli/) | Custom connector development and deployment | "Build a custom connector", "deploy my connector" |
 | [`stackone-connectors`](skills/stackone-connectors/) | Discover connectors, actions, and integration capabilities | "Which providers does StackOne support?" |
 | [`stackone-unified-connectors`](skills/stackone-unified-connectors/) | Build unified connectors that transform provider data into standardized schemas | "start unified build for [provider]", "map fields to schema" |
+| [`stackone-defender`](skills/stackone-defender/) | Detect prompt injection and jailbreak attacks in text using local ML | "scan for prompt injection", "is this text safe?", "protect my agent" |
 
 Each skill includes step-by-step workflows, concrete examples, and troubleshooting for common errors.
 

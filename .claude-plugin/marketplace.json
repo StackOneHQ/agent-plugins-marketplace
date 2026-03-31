@@ -1,13 +1,12 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "stackone-marketplace",
   "owner": {
     "name": "StackOne",
     "email": "engineering@stackone.com"
   },
   "metadata": {
-    "description": "StackOne agent skills — integration infrastructure for AI agents with 200+ connectors, MCP, A2A, and SDKs",
-    "version": "2.1.0"
+    "description": "StackOne agent skills — integration infrastructure for AI agents with 200+ connectors, MCP, A2A, SDKs, and prompt injection defense",
+    "version": "2.2.0"
   },
   "plugins": [
     {
@@ -16,8 +15,8 @@
         "source": "github",
         "repo": "StackOneHQ/agent-plugins-marketplace"
       },
-      "description": "Integration infrastructure for AI agents — account linking, 200+ connectors, 10,000+ actions, TypeScript/Python SDKs, MCP, A2A, and connector development CLI",
-      "version": "2.1.0",
+      "description": "Integration infrastructure for AI agents — account linking, 200+ connectors, 10,000+ actions, TypeScript/Python SDKs, MCP, A2A, connector development CLI, and prompt injection defense",
+      "version": "2.2.0",
       "category": "integrations",
       "tags": [
         "stackone",
@@ -31,7 +30,10 @@
         "lms",
         "mcp",
         "a2a",
-        "ai-agents"
+        "ai-agents",
+        "defender",
+        "prompt-injection",
+        "security"
       ],
       "author": {
         "name": "StackOne",
