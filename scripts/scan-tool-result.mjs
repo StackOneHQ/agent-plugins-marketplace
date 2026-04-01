@@ -20,7 +20,8 @@ async function main() {
     process.exit(0);
   }
 
-  const output = data.tool_output;
+  // tool_output for Bash, tool_response for WebFetch/WebSearch
+  const output = data.tool_output ?? data.tool_response;
   if (!output || typeof output !== "string" || output.length < 20) {
     process.exit(0);
   }
