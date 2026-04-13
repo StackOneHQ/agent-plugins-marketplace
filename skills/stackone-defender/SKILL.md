@@ -33,7 +33,11 @@ StackOne Defender detects prompt injection and jailbreak attempts in text. It co
 ### Step 2: Installation
 
 ```bash
-npm install @stackone/defender @huggingface/transformers onnxruntime-node
+# Core (required)
+npm install @stackone/defender
+
+# ML classification (optional, recommended)
+npm install @huggingface/transformers onnxruntime-node
 ```
 
 ### Step 3: Scanning text
@@ -157,7 +161,7 @@ await defense.warmupTier2();
 
 for (const { text, label } of dataset) {
   const result = await defense.defendToolResult({ input: text }, "eval");
-  console.log(`${!result.allowed === (label === "malicious") ? "✓" : "✗"} risk=${result.riskLevel} score=${result.tier2Score?.toFixed(3)} "${text.slice(0, 50)}"`);
+  console.log(`${(result.riskLevel !== "low") === (label === "malicious") ? "✓" : "✗"} risk=${result.riskLevel} score=${result.tier2Score?.toFixed(3)} "${text.slice(0, 50)}"`);
 }
 ```
 

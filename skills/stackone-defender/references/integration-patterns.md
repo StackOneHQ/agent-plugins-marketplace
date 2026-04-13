@@ -56,7 +56,7 @@ Add Defender as HTTP middleware to protect API endpoints that accept free-text i
 import { PromptDefense } from "@stackone/defender";
 
 const defense = new PromptDefense({ blockHighRisk: true });
-defense.warmupTier2();
+await defense.warmupTier2();
 
 async function defenderMiddleware(req, res, next) {
   try {
