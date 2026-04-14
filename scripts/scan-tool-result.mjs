@@ -21,7 +21,8 @@ async function main() {
     process.exit(0);
   }
 
-  // tool_output for Bash; tool_response is an object for WebFetch/WebSearch (content in .result)
+  // tool_output for Bash; WebFetch/WebSearch may provide an object response with content in .result,
+  // falling back to .output when .result is absent.
   const raw = data.tool_output ?? data.tool_response;
   const output = raw && typeof raw === "object" ? (raw.result ?? raw.output ?? "") : (raw ?? "");
   if (!output || typeof output !== "string" || output.length < 20) {
