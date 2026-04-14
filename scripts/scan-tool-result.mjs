@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * PostToolUse hook that scans Bash tool output through StackOne Defender.
+ * PostToolUse hook that scans tool output through StackOne Defender.
  *
  * Receives JSON on stdin with { tool_name, tool_input, tool_output, ... }
  * Exit 0 = pass, Exit 2 = block (stderr sent to Claude as feedback)
  *
- * Requires @stackone/defender to be installed in the project.
+ * Defender is loaded from the plugin's own node_modules, installed on first
+ * session start by the SessionStart hook in hooks/hooks.json.
  */
 
 async function main() {
