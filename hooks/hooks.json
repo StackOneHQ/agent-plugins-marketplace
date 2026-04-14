@@ -1,5 +1,15 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -d \"${CLAUDE_PLUGIN_ROOT}/node_modules/@stackone/defender\" ] || npm install --prefix \"${CLAUDE_PLUGIN_ROOT}\" --silent"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Bash|WebFetch|WebSearch",

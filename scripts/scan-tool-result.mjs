@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * PostToolUse hook that scans Bash tool output through StackOne Defender.
+ * PostToolUse hook that scans tool output through StackOne Defender.
  *
  * Receives JSON on stdin with { tool_name, tool_input, tool_output, ... }
  * Exit 0 = pass, Exit 2 = block (stderr sent to Claude as feedback)
  *
- * Requires @stackone/defender to be installed in the project.
+ * Defender is loaded from the plugin's own node_modules, installed on first
+ * session start by the SessionStart hook in hooks/hooks.json.
  */
 
 async function main() {
@@ -26,13 +27,15 @@ async function main() {
     process.exit(0);
   }
 
-  // Try to load defender — if not installed, skip silently
+  // Load defender from the plugin's own node_modules (installed by SessionStart hook)
   let PromptDefense;
   try {
-    const mod = await import("@stackone/defender");
-    PromptDefense = mod.PromptDefense;
+    const { createRequire } = await import("module");
+    const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
+    const requireFrom = createRequire(pluginRoot ? `${pluginRoot}/package.json` : import.meta.url);
+    PromptDefense = requireFrom("@stackone/defender").PromptDefense;
   } catch {
-    // Defender not installed in this project — skip
+    // Defender not available — skip silently
     process.exit(0);
   }
 
