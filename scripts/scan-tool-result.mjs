@@ -55,7 +55,7 @@ async function main() {
   if (raw && typeof raw === "object") {
     if (typeof raw.result === "string") output = raw.result;
     else if (typeof raw.output === "string") output = raw.output;
-    else { try { output = JSON.stringify(raw); } catch { output = ""; } }
+    else { try { output = JSON.stringify(raw); } catch (err) { process.stderr.write(`[Defender] Failed to serialize tool response: ${err.message}\n`); output = ""; } }
   } else {
     output = raw ?? "";
   }
