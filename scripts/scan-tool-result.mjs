@@ -17,9 +17,9 @@ import { fileURLToPath } from "url";
 import { existsSync } from "fs";
 import { execSync } from "child_process";
 
-// Resolve plugin root from this script's location (<plugin-root>/scripts/scan-tool-result.mjs)
-const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ||
-  join(dirname(fileURLToPath(import.meta.url)), "..");
+// Always resolve plugin root from this script's on-disk location so the path
+// cannot be redirected by environment variable tampering.
+const pluginRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 // Self-install deps on first run — subsequent runs skip this instantly
 const defenderDir = join(pluginRoot, "node_modules", "@stackone", "defender");
@@ -28,8 +28,8 @@ if (!existsSync(defenderDir)) {
     execSync(`npm install --prefix "${pluginRoot}" --silent --no-audit --no-fund`, {
       timeout: 120_000,
     });
-  } catch {
-    // Install failed — skip scan silently rather than block the agent
+  } catch (err) {
+    process.stderr.write(`[Defender] Dependency install failed — scanner disabled: ${err.message}\n`);
     process.exit(0);
   }
 }
@@ -51,9 +51,14 @@ async function main() {
   // MCP tools (gmail, etc.) return arbitrary objects — fall back to JSON.stringify so all text
   // fields (body, snippet, headers, …) are included in the scan.
   const raw = data.tool_output ?? data.tool_response;
-  const output = raw && typeof raw === "object"
-    ? (raw.result ?? raw.output ?? JSON.stringify(raw))
-    : (raw ?? "");
+  let output;
+  if (raw && typeof raw === "object") {
+    if (typeof raw.result === "string") output = raw.result;
+    else if (typeof raw.output === "string") output = raw.output;
+    else { try { output = JSON.stringify(raw); } catch { output = ""; } }
+  } else {
+    output = raw ?? "";
+  }
   if (!output || typeof output !== "string" || output.length < 20) {
     process.exit(0);
   }
