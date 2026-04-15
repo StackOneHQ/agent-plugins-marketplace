@@ -6,9 +6,35 @@
  * Receives JSON on stdin with { tool_name, tool_input, tool_output, ... }
  * Exit 0 = pass, Exit 2 = block (stderr sent to Claude as feedback)
  *
- * Defender is loaded from the plugin's own node_modules, installed on first
- * session start by the SessionStart hook in hooks/hooks.json.
+ * Defender is loaded from the plugin's own node_modules. On first run after
+ * a fresh install, this script installs its own dependencies using its location
+ * on disk — no CLAUDE_PLUGIN_ROOT env var required.
  */
+
+import { createRequire } from "module";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+import { existsSync } from "fs";
+import { execSync } from "child_process";
+
+// Always resolve plugin root from this script's on-disk location so the path
+// cannot be redirected by environment variable tampering.
+const pluginRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+// Self-install deps on first run — subsequent runs skip this instantly
+const defenderDir = join(pluginRoot, "node_modules", "@stackone", "defender");
+if (!existsSync(defenderDir)) {
+  try {
+    execSync(`npm install --prefix "${pluginRoot}" --silent --no-audit --no-fund`, {
+      timeout: 120_000,
+    });
+  } catch (err) {
+    process.stderr.write(`[Defender] Dependency install failed — scanner disabled: ${err.message}\n`);
+    process.exit(0);
+  }
+}
+
+const requireFrom = createRequire(join(pluginRoot, "package.json"));
 
 async function main() {
   const input = await readStdin();
@@ -21,23 +47,26 @@ async function main() {
     process.exit(0);
   }
 
-  // tool_output for Bash; WebFetch/WebSearch may provide an object response with content in .result,
-  // falling back to .output when .result is absent.
+  // tool_output for Bash; WebFetch/WebSearch provide an object with content in .result/.output;
+  // MCP tools (gmail, etc.) return arbitrary objects — fall back to JSON.stringify so all text
+  // fields (body, snippet, headers, …) are included in the scan.
   const raw = data.tool_output ?? data.tool_response;
-  const output = raw && typeof raw === "object" ? (raw.result ?? raw.output ?? "") : (raw ?? "");
+  let output;
+  if (raw && typeof raw === "object") {
+    if (typeof raw.result === "string") output = raw.result;
+    else if (typeof raw.output === "string") output = raw.output;
+    else { try { output = JSON.stringify(raw); } catch (err) { process.stderr.write(`[Defender] Failed to serialize tool response: ${err.message}\n`); output = ""; } }
+  } else {
+    output = raw ?? "";
+  }
   if (!output || typeof output !== "string" || output.length < 20) {
     process.exit(0);
   }
 
-  // Load defender from the plugin's own node_modules (installed by SessionStart hook)
   let PromptDefense;
   try {
-    const { createRequire } = await import("module");
-    const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
-    const requireFrom = createRequire(pluginRoot ? `${pluginRoot}/package.json` : import.meta.url);
     PromptDefense = requireFrom("@stackone/defender").PromptDefense;
   } catch {
-    // Defender not available — skip silently
     process.exit(0);
   }
 
@@ -50,7 +79,6 @@ async function main() {
     );
 
     if (!result.allowed) {
-      // Exit 2 = block, stderr is sent to Claude as feedback
       process.stderr.write(
         `[Defender] Tool result BLOCKED — risk: ${result.riskLevel}, ` +
         `tier2Score: ${result.tier2Score?.toFixed(3) ?? "n/a"}, ` +
@@ -75,7 +103,6 @@ async function main() {
       process.stdout.write(ctx);
     }
   } catch (err) {
-    // Don't block on scanner errors
     process.stderr.write(`[Defender] Scan error: ${err.message}\n`);
   }
 
