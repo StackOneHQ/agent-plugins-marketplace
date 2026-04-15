@@ -1,6 +1,6 @@
 {
   "name": "stackone",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Integration infrastructure for AI agents — account linking, 200+ connectors, 10,000+ actions, TypeScript/Python SDKs, MCP, A2A, unified connector development, CLI, and prompt injection defense",
   "author": {
     "name": "StackOne",
