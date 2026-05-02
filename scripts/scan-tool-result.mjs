@@ -70,7 +70,10 @@ async function main() {
     process.exit(0);
   }
 
-  const defense = new PromptDefense({ blockHighRisk: true });
+  // useSfe enables Defender's FastText preprocessor which drops metadata-shaped
+  // fields (file listings, JSON snippets, ls -lh output) before they reach the
+  // ML classifier. This eliminates a known false-positive class on Bash output.
+  const defense = new PromptDefense({ blockHighRisk: true, useSfe: true });
 
   try {
     const result = await defense.defendToolResult(
