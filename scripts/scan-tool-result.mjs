@@ -14,16 +14,29 @@
 import { createRequire } from "module";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { execSync } from "child_process";
 
 // Always resolve plugin root from this script's on-disk location so the path
 // cannot be redirected by environment variable tampering.
 const pluginRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-// Self-install deps on first run — subsequent runs skip this instantly
-const defenderDir = join(pluginRoot, "node_modules", "@stackone", "defender");
-if (!existsSync(defenderDir)) {
+// Self-install deps on first run *and* after upgrades that introduce new deps.
+// We check every top-level dep from package.json rather than only the defender
+// directory, so that adding a new peer dep (e.g. fasttext.wasm for SFE) triggers
+// a reinstall on existing plugin caches.
+function readPluginDeps() {
+  try {
+    const pkg = JSON.parse(readFileSync(join(pluginRoot, "package.json"), "utf8"));
+    return Object.keys(pkg.dependencies || {});
+  } catch {
+    return ["@stackone/defender"];
+  }
+}
+
+const deps = readPluginDeps();
+const missingDep = deps.find((d) => !existsSync(join(pluginRoot, "node_modules", d)));
+if (missingDep) {
   try {
     execSync(`npm install --prefix "${pluginRoot}" --silent --no-audit --no-fund`, {
       timeout: 120_000,
@@ -47,19 +60,18 @@ async function main() {
     process.exit(0);
   }
 
-  // tool_output for Bash; WebFetch/WebSearch provide an object with content in .result/.output;
-  // MCP tools (gmail, etc.) return arbitrary objects — fall back to JSON.stringify so all text
-  // fields (body, snippet, headers, …) are included in the scan.
+  // Bash tool_output is a string; WebFetch/WebSearch/MCP tool_response is an
+  // object. We pass strings wrapped as { output } and objects through unchanged
+  // so Defender's SFE preprocessor can walk individual fields and drop the
+  // metadata-shaped ones (timestamps, IDs, paths) before Tier 2 classification.
   const raw = data.tool_output ?? data.tool_response;
-  let output;
-  if (raw && typeof raw === "object") {
-    if (typeof raw.result === "string") output = raw.result;
-    else if (typeof raw.output === "string") output = raw.output;
-    else { try { output = JSON.stringify(raw); } catch (err) { process.stderr.write(`[Defender] Failed to serialize tool response: ${err.message}\n`); output = ""; } }
+  let payload;
+  if (typeof raw === "string") {
+    if (raw.length < 20) process.exit(0);
+    payload = { output: raw };
+  } else if (raw && typeof raw === "object") {
+    payload = raw;
   } else {
-    output = raw ?? "";
-  }
-  if (!output || typeof output !== "string" || output.length < 20) {
     process.exit(0);
   }
 
@@ -71,13 +83,14 @@ async function main() {
   }
 
   // useSfe enables Defender's FastText preprocessor which drops metadata-shaped
-  // fields (file listings, JSON snippets, ls -lh output) before they reach the
-  // ML classifier. This eliminates a known false-positive class on Bash output.
+  // fields (file listings, JSON snippets, ls -lh output, headers, IDs) before
+  // they reach the ML classifier — eliminates a known false-positive class on
+  // both Bash output and structured MCP/WebFetch responses.
   const defense = new PromptDefense({ blockHighRisk: true, useSfe: true });
 
   try {
     const result = await defense.defendToolResult(
-      { output },
+      payload,
       data.tool_name || "bash"
     );
 
