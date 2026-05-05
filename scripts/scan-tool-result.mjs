@@ -73,11 +73,18 @@ async function main() {
   // Tier 2 only sees content, not framing.
   let raw = data.tool_output ?? data.tool_response;
   if (typeof raw === "string") {
+    const looksJsonShaped = raw.startsWith("{") || raw.startsWith("[");
     try {
       const parsed = JSON.parse(raw);
       if (parsed !== null && typeof parsed === "object") raw = parsed;
-    } catch {
-      // Not JSON — keep raw as a plain string
+    } catch (err) {
+      // Plain-string tool outputs (raw stdout) routinely fail to parse — that's
+      // the expected control-flow signal that the input is not JSON-encoded.
+      // Only log when the string was JSON-shaped but malformed, since that's a
+      // genuine anomaly worth surfacing.
+      if (looksJsonShaped) {
+        process.stderr.write(`[Defender] Tool output looked JSON-shaped but failed to parse: ${err.message}\n`);
+      }
     }
   }
   let payload;
