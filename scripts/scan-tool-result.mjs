@@ -64,7 +64,22 @@ async function main() {
   // object. We pass strings wrapped as { output } and objects through unchanged
   // so Defender's SFE preprocessor can walk individual fields and drop the
   // metadata-shaped ones (timestamps, IDs, paths) before Tier 2 classification.
-  const raw = data.tool_output ?? data.tool_response;
+  //
+  // Claude Code's Bash hook delivers stdout as a JSON-encoded envelope string
+  // ('{"stdout":"...","stderr":"...","exit_code":0}'). The envelope punctuation
+  // alone inflates Tier 2 scores significantly — we observed 0.138 → 0.996 on
+  // identical content purely from the wrapper. If the input is a JSON-parseable
+  // string, scan its structured form instead so SFE walks real fields and
+  // Tier 2 only sees content, not framing.
+  let raw = data.tool_output ?? data.tool_response;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed !== null && typeof parsed === "object") raw = parsed;
+    } catch {
+      // Not JSON — keep raw as a plain string
+    }
+  }
   let payload;
   if (typeof raw === "string") {
     if (raw.length < 20) process.exit(0);
