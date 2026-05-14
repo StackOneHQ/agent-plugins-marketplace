@@ -2,25 +2,9 @@
 
 /**
  * Defender daemon — long-running scanner over a Unix domain socket.
- *
- * Spawned on demand by scan-tool-result.mjs. Holds one warm PromptDefense
- * instance so per-hook scans cost ~5–15ms instead of cold-loading ONNX
- * (~500ms) every invocation. Also avoids the libc++abi mutex teardown
- * noise that onnxruntime-node emits on every fresh Node exit — the
- * cleanup race fires once per daemon lifetime, in a background process,
- * not on user-visible tool calls.
- *
- * Wire protocol (line-delimited JSON over UDS):
- *   server → client (on connect):
- *     { type: "hello", defenderVersion, protocolVersion, pid }
- *   client → server:
- *     { type: "scan", id, payload, toolName }
- *   server → client:
- *     { type: "result", id, result }   // result = DefenseResult
- *     { type: "error",  id, error }
- *
- * Lifecycle: idle-exits after IDLE_TIMEOUT_MS without a scan request.
- * SIGTERM/SIGINT: drain in-flight scans, unlink socket, exit 0.
+ * Wire protocol: line-delimited JSON. Server sends `hello` on connect;
+ * client sends `{type:"scan", id, payload, toolName}`; server replies
+ * `{type:"result", id, result}` or `{type:"error", id, error}`.
  */
 
 import { createRequire } from "module";
@@ -77,8 +61,6 @@ function fatal(msg, err) {
 }
 
 // --- Status mode ---------------------------------------------------------
-// `node defender-daemon.mjs --status` prints a brief health report and
-// exits. Useful for debugging without grepping the log.
 if (process.argv[2] === "--status") {
   const lines = [];
   let state = null;
@@ -136,9 +118,7 @@ try {
   fatal("failed to load @stackone/defender", err);
 }
 
-// Load daemon config. The config file is sibling-to this script so each
-// install (marketplace source vs installed plugin cache) ships its own
-// constructor args without forking the daemon code.
+// Sibling defender-daemon.config.json holds the PromptDefense constructor args.
 let rawConfig = {};
 try {
   rawConfig = JSON.parse(readFileSync(configPath, "utf8"));
@@ -169,9 +149,6 @@ try {
 }
 log("warmup complete");
 
-// Idle-exit + uptime-cap tracking. Reset `lastActivity` on every scan
-// request; uptime cap is a hard upper bound to mitigate slow leaks in
-// long-running daemons (next scan will respawn a fresh one).
 const startedAtMs = Date.now();
 let lastActivity = Date.now();
 let inFlight = 0;
@@ -212,8 +189,17 @@ function shutdown(code) {
   } catch {
     // ignore — caller is exiting anyway
   }
-  // Give in-flight responses a moment to drain to the socket buffer.
-  setTimeout(() => process.exit(code), 50);
+  // Drain in-flight scans; force-exit after 2s.
+  const deadline = Date.now() + 2000;
+  function tryExit() {
+    if (inFlight === 0 || Date.now() >= deadline) {
+      if (inFlight !== 0) log("shutdown deadline exceeded — forcing exit", { inFlight });
+      process.exit(code);
+    } else {
+      setTimeout(tryExit, 25);
+    }
+  }
+  setTimeout(tryExit, 50);
 }
 
 process.on("SIGINT", () => shutdown(0));
@@ -223,9 +209,7 @@ process.on("uncaughtException", (err) => {
   shutdown(1);
 });
 
-// Remove stale socket if a prior daemon crashed without cleaning up.
-// We hold the spawn lock externally (client takes flock before spawning),
-// so this can't race with another live daemon.
+// Clean any stale socket from a prior crash. Safe under flock held by client.
 try {
   if (existsSync(SOCKET_PATH)) unlinkSync(SOCKET_PATH);
 } catch (err) {
@@ -233,9 +217,6 @@ try {
 }
 
 const server = createServer((socket) => {
-  // Per-connection state. Each client connection sends one scan and then
-  // closes; we still handle multi-request connections cleanly via line
-  // splitting.
   let buf = "";
   const hello = {
     type: "hello",

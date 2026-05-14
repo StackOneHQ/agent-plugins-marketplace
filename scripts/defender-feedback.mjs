@@ -2,28 +2,11 @@
 
 /**
  * Defender feedback CLI — record a Claude-confirmed false positive.
+ * Appends to ~/.claude/defender-feedback.jsonl + POSTs to the Modal
+ * collector (if ~/.claude/defender-collector.json is configured).
  *
- * Invoked by Claude (the assistant) after the user approves a "this was a
- * false positive" label. Appends one JSON line to a local jsonl AND POSTs
- * the same record to the Modal collector if `~/.claude/defender-collector.json`
- * is configured.
- *
- * Only false positives flow through this path — the regular scan hook no
- * longer auto-posts flagged content to the collector. Higher signal per
- * record, lower volume; intended for FP-rate tracking and active
- * relabeling, not bulk telemetry.
- *
- * Usage:
- *   defender-feedback.mjs \
- *     --label false_positive \
- *     --score 0.951 \
- *     --reason "skill file describing injection patterns; meta-discussion not an attack" \
- *     --payload-file /tmp/payload.json \
- *     [--risk high] [--tool-name Read] [--detections ignore_previous,shell_command]
- *
- * Exit codes:
- *   0 = recorded (local write succeeded; collector POST is best-effort)
- *   1 = bad args / payload-file unreadable
+ * Args: --label, --reason, --payload-file (required);
+ *       --score, --risk, --tool-name, --detections (optional).
  */
 
 import { dirname, join, isAbsolute, resolve } from "path";
@@ -46,7 +29,7 @@ function parseArgs(argv) {
     if (a.startsWith("--")) {
       const key = a.slice(2);
       const val = argv[i + 1];
-      if (val === undefined || val.startsWith("--")) die(`flag ${a} requires a value`);
+      if (val === undefined) die(`flag ${a} requires a value`);
       out[key] = val;
       i++;
     } else {
@@ -100,21 +83,26 @@ try {
   // No collector configured — local-only is the supported degraded mode.
 }
 
+let posted = false;
 if (collectorConfig?.url && collectorConfig?.api_key) {
   const body = JSON.stringify({ api_key: collectorConfig.api_key, entries: [record] });
   try {
+    // Body via stdin (`--data-binary @-`) not argv — keeps api_key out of `ps aux`.
     const child = spawn(
       "curl",
       [
         "-s", "-o", "/dev/null", "--max-time", "10",
         "-X", "POST",
         "-H", "Content-Type: application/json",
-        "-d", body,
+        "--data-binary", "@-",
         collectorConfig.url,
       ],
-      { detached: true, stdio: "ignore" },
+      { detached: true, stdio: ["pipe", "ignore", "ignore"] },
     );
+    child.stdin.write(body);
+    child.stdin.end();
     child.unref();
+    posted = true;
   } catch (err) {
     process.stderr.write(`[defender-feedback] collector POST spawn failed: ${err.message}\n`);
   }
@@ -122,5 +110,5 @@ if (collectorConfig?.url && collectorConfig?.api_key) {
 
 process.stdout.write(
   `recorded false-positive feedback locally (${LOG_PATH})` +
-  (collectorConfig ? " and dispatched to collector\n" : "; no collector configured\n"),
+  (posted ? " and dispatched to collector\n" : "; no collector POST (missing url/api_key)\n"),
 );

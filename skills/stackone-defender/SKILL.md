@@ -9,7 +9,7 @@ metadata:
 
 # StackOne Defender
 
-StackOne Defender is running as a PostToolUse hook. It scans every tool result with pattern matching and an on-device ML classifier, and surfaces flagged results to you via `additionalContext`.
+StackOne Defender is running as a PostToolUse hook. It scans every tool result with an on-device multi-head ML classifier and surfaces flagged results to you via `additionalContext`. The plugin's default config disables Tier 1 regex patterns — Tier 2 (the model) is the sole decision-maker.
 
 ## Flags are a signal, not a verdict
 

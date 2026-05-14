@@ -1,21 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * PostToolUse hook — scans tool output via the defender daemon.
- *
- * Reads JSON on stdin with { tool_name, tool_input, tool_output, ... }.
- * Writes one line of JSON to stdout when content is flagged (HIGH RISK or
- * suspicious); exits silently otherwise. stderr is reserved for diagnostics.
- *
- * The daemon is spawned on demand and held warm across hook invocations,
- * so per-scan latency drops from ~500–800ms cold to ~5–15ms warm. Falls
- * back to silent-skip if the daemon is unreachable so a defender issue
- * never blocks the tool flow.
- *
- * On first run after a fresh install (or after a dep added in an upgrade),
- * this script auto-installs the plugin's own node_modules — the daemon
- * cannot start without @stackone/defender, so install must happen before
- * spawn.
+ * PostToolUse hook — thin client that scans tool output via the defender daemon.
+ * Reads JSON on stdin, writes one-line JSON to stdout on flagged content,
+ * silent-exits otherwise. Self-installs node_modules on first run (the daemon
+ * needs @stackone/defender resolvable before spawn). Falls back to silent-skip
+ * if the daemon is unreachable.
  */
 
 import { dirname, join } from "path";
@@ -46,6 +36,9 @@ const SCAN_TIMEOUT_MS = 5000;
 const SPAWN_WAIT_MS = 6000;
 const SPAWN_POLL_MS = 100;
 const KILL_WAIT_MS = 2000;
+// Skip the IPC entirely for tiny payloads; defender's per-string skip kicks in
+// at 10 chars but doesn't save the round trip.
+const PAYLOAD_SKIP_BELOW_BYTES = 500;
 
 function logClientError(msg, extra) {
   try {
@@ -63,13 +56,6 @@ function logClientError(msg, extra) {
     // Best-effort logging.
   }
 }
-
-// No persistent log of flagged scans — local OR remote. The hook only
-// emits `additionalContext` to Claude for in-session evaluation, and
-// only Claude-confirmed false positives (via defender-feedback.mjs)
-// produce any durable record. Flagged events without an FP label
-// disappear with the session; this is by design — every record is
-// either training signal or operator-visible context, nothing in between.
 
 // --- Self-install ----------------------------------------------------------
 
@@ -369,8 +355,8 @@ async function main() {
     process.exit(0);
   }
 
-  // Self-install happens BEFORE daemon spawn — the daemon can't start
-  // without @stackone/defender resolvable from the plugin's node_modules.
+  if (JSON.stringify(payload).length < PAYLOAD_SKIP_BELOW_BYTES) process.exit(0);
+
   if (!ensureDepsInstalled()) process.exit(0);
 
   const ok = await ensureDaemonRunning();
