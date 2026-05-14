@@ -362,7 +362,7 @@ async function main() {
     process.exit(0);
   }
 
-  if (JSON.stringify(payload).length < PAYLOAD_SKIP_BELOW_BYTES) process.exit(0);
+  if (Buffer.byteLength(JSON.stringify(payload), "utf8") < PAYLOAD_SKIP_BELOW_BYTES) process.exit(0);
 
   if (!ensureDepsInstalled()) process.exit(0);
 
