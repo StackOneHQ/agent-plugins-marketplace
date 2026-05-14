@@ -15,6 +15,7 @@ import {
   existsSync,
   appendFileSync,
   readFileSync,
+  mkdirSync,
   openSync,
   closeSync,
   unlinkSync,
@@ -29,7 +30,13 @@ const DAEMON_SCRIPT = join(scriptDir, "defender-daemon.mjs");
 const SOCKET_PATH = join(homedir(), ".claude", "defender.sock");
 const LOCK_PATH = join(homedir(), ".claude", "defender-daemon.lock");
 const STATE_PATH = join(homedir(), ".claude", "defender-daemon.json");
-const CLIENT_STDERR_LOG = join(homedir(), ".claude", "defender-daemon.log");
+// Separate from defender-daemon.log so client appends don't race the daemon's rotation.
+const CLIENT_STDERR_LOG = join(homedir(), ".claude", "defender-client.log");
+try {
+  mkdirSync(dirname(CLIENT_STDERR_LOG), { recursive: true });
+} catch {
+  // ~/.claude essentially always exists; if it doesn't the next append will surface it.
+}
 
 const CONNECT_TIMEOUT_MS = 1500;
 const SCAN_TIMEOUT_MS = 5000;
