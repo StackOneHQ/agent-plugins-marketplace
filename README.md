@@ -1,6 +1,6 @@
 # StackOne Plugins for Agents
 
-Agent plugins made by [StackOne](https://stackone.com) to empower your agents with knowledge of StackOne and generic utilities to have any agents call tools in a safer way.
+Agent plugins made by [StackOne](https://stackone.com) — integration infrastructure for AI agents, plus a prompt-injection defense hook.
 
 ## Install
 
@@ -8,35 +8,64 @@ Agent plugins made by [StackOne](https://stackone.com) to empower your agents wi
 
 ```bash
 # Add the marketplace
-/plugin marketplace add stackonehq/agent-plugins-marketplace
+/plugin marketplace add stackonehq/agent-plugins
 
-# Install the StackOne plugin (all 7 skills)
-/plugin install stackone@stackone-marketplace
+# List available plugins
+/plugin list @stackone-agent-plugins
+
+# Install any plugin (one per skill)
+/plugin install stackone-platform@stackone-agent-plugins
+/plugin install stackone-connect@stackone-agent-plugins
+/plugin install stackone-agents@stackone-agent-plugins
+/plugin install stackone-connectors@stackone-agent-plugins
+/plugin install stackone-cli@stackone-agent-plugins
+/plugin install stackone-unified-connectors@stackone-agent-plugins
+/plugin install stackone-defender@stackone-agent-plugins
 ```
 
 ### Any agent (via Skills CLI)
 
 ```bash
 # Install all skills (works with Claude Code, Cursor, Codex, Windsurf, etc.)
-npx skills add stackonehq/agent-plugins-marketplace
+npx skills add stackonehq/agent-plugins
 
 # Install a specific skill
-npx skills add stackonehq/agent-plugins-marketplace@stackone-agents
+npx skills add stackonehq/agent-plugins@stackone-agents
 ```
 
-## Available Skills
+## Available Plugins
 
-| Skill | What it does | When to use |
-|-------|-------------|-------------|
-| [`stackone-platform`](skills/stackone-platform/) | Platform operations — API keys, accounts, logs, debugging | "Set up StackOne", "list my accounts", "debug API errors" |
-| [`stackone-connect`](skills/stackone-connect/) | Account linking via Connect Sessions and the Hub component | "Connect a provider", "embed the integration picker" |
-| [`stackone-agents`](skills/stackone-agents/) | Build AI agents with TypeScript/Python SDK, MCP, or A2A | "Add StackOne tools to my agent", "set up MCP" |
-| [`stackone-cli`](skills/stackone-cli/) | Custom connector development and deployment | "Build a custom connector", "deploy my connector" |
-| [`stackone-connectors`](skills/stackone-connectors/) | Discover connectors, actions, and integration capabilities | "Which providers does StackOne support?" |
-| [`stackone-unified-connectors`](skills/stackone-unified-connectors/) | Build unified connectors that transform provider data into standardized schemas | "start unified build for [provider]", "map fields to schema" |
-| [`stackone-defender`](skills/stackone-defender/) | Detect prompt injection and jailbreak attacks in text using local ML | "scan for prompt injection", "is this text safe?", "protect my agent" |
+| Plugin | Category | What it does | When to use |
+|--------|----------|--------------|-------------|
+| [`stackone-platform`](plugins/integrations/stackone-platform/) | Integrations | API keys, accounts, logs, debugging | "Set up StackOne", "list my accounts", "debug API errors" |
+| [`stackone-connect`](plugins/integrations/stackone-connect/) | Integrations | Account linking via Connect Sessions and the Hub component | "Connect a provider", "embed the integration picker" |
+| [`stackone-agents`](plugins/integrations/stackone-agents/) | Integrations | Build AI agents with TypeScript/Python SDK, MCP, or A2A | "Add StackOne tools to my agent", "set up MCP" |
+| [`stackone-cli`](plugins/integrations/stackone-cli/) | Integrations | Custom connector development and deployment | "Build a custom connector", "deploy my connector" |
+| [`stackone-connectors`](plugins/integrations/stackone-connectors/) | Integrations | Discover connectors, actions, and integration capabilities | "Which providers does StackOne support?" |
+| [`stackone-unified-connectors`](plugins/integrations/stackone-unified-connectors/) | Integrations | Build unified connectors that transform provider data into standardized schemas | "Start unified build for [provider]", "map fields to schema" |
+| [`stackone-defender`](plugins/security/stackone-defender/) | Security | Detect prompt injection and jailbreak attacks in tool results using local ML | "Scan for prompt injection", "is this text safe?", "protect my agent" |
 
-Each skill includes step-by-step workflows, concrete examples, and troubleshooting for common errors.
+Each plugin includes a focused skill, step-by-step workflows, concrete examples, and troubleshooting.
+
+## Repository Structure
+
+```
+agent-plugins/
+├── .claude-plugin/
+│   └── marketplace.json          # Marketplace manifest — lists all plugins
+└── plugins/
+    ├── integrations/
+    │   ├── stackone-platform/
+    │   ├── stackone-connect/
+    │   ├── stackone-agents/
+    │   ├── stackone-connectors/
+    │   ├── stackone-cli/
+    │   └── stackone-unified-connectors/
+    └── security/
+        └── stackone-defender/    # ships its own hooks/, scripts/, package.json
+```
+
+Each plugin directory contains its own `.claude-plugin/plugin.json`, a `skills/<name>/` folder, and (for `stackone-defender`) the PostToolUse hook config plus ML scripts.
 
 ## Design Philosophy
 

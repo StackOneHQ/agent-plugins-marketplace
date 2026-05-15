@@ -1,0 +1,22 @@
+{
+  "name": "stackone-platform",
+  "version": "2.5.0",
+  "description": "Manage StackOne resources — API keys, linked accounts, logs, debugging, and webhook configuration.",
+  "author": {
+    "name": "StackOne",
+    "email": "engineering@stackone.com",
+    "url": "https://stackone.com"
+  },
+  "homepage": "https://docs.stackone.com",
+  "repository": "https://github.com/StackOneHQ/agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "stackone",
+    "integrations",
+    "platform",
+    "api-keys",
+    "accounts",
+    "webhooks",
+    "debugging"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "stackone-connectors",
+  "version": "2.5.0",
+  "description": "Discover StackOne's 200+ connectors and 9,000+ actions across HRIS, ATS, CRM, LMS, ticketing, messaging, documents, IAM, and accounting.",
+  "author": {
+    "name": "StackOne",
+    "email": "engineering@stackone.com",
+    "url": "https://stackone.com"
+  },
+  "homepage": "https://docs.stackone.com",
+  "repository": "https://github.com/StackOneHQ/agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "stackone",
+    "integrations",
+    "connectors",
+    "hris",
+    "ats",
+    "crm",
+    "lms",
+    "discovery"
+  ]
+}
