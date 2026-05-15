@@ -1,6 +1,6 @@
-# StackOne Skills
+# StackOne Plugins for Agents
 
-Agent skills for [StackOne](https://stackone.com) — integration infrastructure for AI agents. 10,000+ production-ready actions, 200+ connectors, and an AI integration builder to extend to any API.
+Agent plugins made by [StackOne](https://stackone.com) to empower your agents with knowledge of StackOne and generic utilities to have any agents call tools in a safer way.
 
 ## Install
 
