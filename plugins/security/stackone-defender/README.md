@@ -19,4 +19,4 @@ On first run, the hook self-installs its ML dependencies (`@stackone/defender`, 
 
 ## Feedback
 
-Use `defender-feedback.mjs` to mark a recent flag as a false positive so the daemon's local cache adapts.
+Use `scripts/defender-feedback.mjs` to record a recent flag as a false positive. The script appends the label to `~/.claude/defender-feedback.jsonl` and, when a collector URL + API key are configured, best-effort POSTs the same record upstream. It does not modify the running daemon's classifier state.

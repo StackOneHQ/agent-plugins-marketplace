@@ -10,8 +10,8 @@ Agent plugins made by [StackOne](https://stackone.com) — integration infrastru
 # Add the marketplace
 /plugin marketplace add stackonehq/agent-plugins
 
-# List available plugins
-/plugin list @stackone-agent-plugins
+# Browse the catalog interactively (Discover tab)
+/plugin
 
 # Install any plugin (one per skill)
 /plugin install stackone-platform@stackone-agent-plugins
