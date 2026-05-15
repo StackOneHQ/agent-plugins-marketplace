@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/StackOneHQ/agent-plugins-marketplace/compare/stackone-v2.4.0...stackone-v2.5.0) (2026-05-15)
+
+
+### Features
+
+* **defender:** daemon-backed scanner, balanced multihead, FP-feedback loop (v2.4.1) ([#16](https://github.com/StackOneHQ/agent-plugins-marketplace/issues/16)) ([3c0bf33](https://github.com/StackOneHQ/agent-plugins-marketplace/commit/3c0bf33adb1a6226c5b308c057159908fa3fb021))
+
 ## [2.4.0](https://github.com/StackOneHQ/agent-plugins-marketplace/compare/stackone-v2.3.1...stackone-v2.4.0) (2026-05-05)
 
 
