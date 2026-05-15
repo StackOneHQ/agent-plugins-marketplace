@@ -8,7 +8,7 @@ Agent plugins made by [StackOne](https://stackone.com) to empower your agents wi
 
 ```bash
 # Add the marketplace
-/plugin marketplace add stackonehq/agent-plugins-marketplace
+/plugin marketplace add stackonehq/agent-plugins
 
 # Install the StackOne plugin (all 7 skills)
 /plugin install stackone@stackone-marketplace
@@ -18,10 +18,10 @@ Agent plugins made by [StackOne](https://stackone.com) to empower your agents wi
 
 ```bash
 # Install all skills (works with Claude Code, Cursor, Codex, Windsurf, etc.)
-npx skills add stackonehq/agent-plugins-marketplace
+npx skills add stackonehq/agent-plugins
 
 # Install a specific skill
-npx skills add stackonehq/agent-plugins-marketplace@stackone-agents
+npx skills add stackonehq/agent-plugins@stackone-agents
 ```
 
 ## Available Skills
