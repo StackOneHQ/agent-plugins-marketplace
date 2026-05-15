@@ -1,0 +1,23 @@
+{
+  "name": "stackone-agents",
+  "version": "2.5.0",
+  "description": "Build AI agents that call StackOne-linked accounts using TypeScript SDK, Python SDK, MCP server, or A2A protocol. Supports OpenAI, Vercel AI SDK, Claude, LangChain, CrewAI, PydanticAI.",
+  "author": {
+    "name": "StackOne",
+    "email": "engineering@stackone.com",
+    "url": "https://stackone.com"
+  },
+  "homepage": "https://docs.stackone.com",
+  "repository": "https://github.com/StackOneHQ/agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "stackone",
+    "ai-agents",
+    "mcp",
+    "a2a",
+    "openai",
+    "langchain",
+    "vercel-ai-sdk",
+    "sdk"
+  ]
+}

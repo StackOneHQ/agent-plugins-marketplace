@@ -1,0 +1,22 @@
+{
+  "name": "stackone-connect",
+  "version": "2.5.0",
+  "description": "Account linking with StackOne Connect Sessions and the Hub React component — full flow from session creation to webhook handling.",
+  "author": {
+    "name": "StackOne",
+    "email": "engineering@stackone.com",
+    "url": "https://stackone.com"
+  },
+  "homepage": "https://docs.stackone.com",
+  "repository": "https://github.com/StackOneHQ/agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "stackone",
+    "integrations",
+    "connect",
+    "account-linking",
+    "oauth",
+    "hub",
+    "react"
+  ]
+}

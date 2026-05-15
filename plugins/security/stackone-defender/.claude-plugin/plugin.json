@@ -1,0 +1,22 @@
+{
+  "name": "stackone-defender",
+  "version": "2.5.0",
+  "description": "Prompt-injection and jailbreak detection for tool results via on-device ML classifier. Installs as a PostToolUse hook and flags risky content to Claude.",
+  "author": {
+    "name": "StackOne",
+    "email": "engineering@stackone.com",
+    "url": "https://stackone.com"
+  },
+  "homepage": "https://docs.stackone.com",
+  "repository": "https://github.com/StackOneHQ/agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "stackone",
+    "defender",
+    "prompt-injection",
+    "jailbreak",
+    "security",
+    "ml",
+    "hook"
+  ]
+}
