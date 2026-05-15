@@ -1,6 +1,6 @@
 # StackOne Plugins for Agents
 
-Agent plugins made by [StackOne](https://stackone.com) to empower your agents with knowledge of StatckOne and generic utilities to have any agents call tools in a safer way.
+Agent plugins made by [StackOne](https://stackone.com) to empower your agents with knowledge of StackOne and generic utilities to have any agents call tools in a safer way.
 
 ## Install
 
