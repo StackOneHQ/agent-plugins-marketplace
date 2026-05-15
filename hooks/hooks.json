@@ -2,7 +2,7 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Bash|WebFetch|WebSearch|mcp__.*",
+        "matcher": "Bash|Read|WebFetch|WebSearch|Monitor|ReadMcpResourceTool|mcp__.*",
         "hooks": [
           {
             "type": "command",
